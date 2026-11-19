@@ -1,0 +1,50 @@
+sequenceDiagram
+    autonumber
+    actor User as User / Buyer
+    participant UI as MenuController
+    participant SS as SalesService (synchronized)
+    participant VAL as Validator
+    participant IS as InventoryService
+    participant CAR as Car
+    participant CR as CarRepository
+    participant SR as SaleRepository
+    participant LOG as AppLogger
+
+    User->>UI: Enter carId, buyerName
+    UI->>SS: sellCar(carId, buyerName, sellerName)
+    activate SS
+    Note over SS: synchronized(lock) critical section
+    SS->>VAL: requireNonBlank(buyerName)
+    VAL-->>SS: OK
+
+    SS->>IS: findById(carId)
+    IS-->>SS: car
+
+    alt Car Not Found
+        SS-->>UI: throws CarNotFoundException
+        UI-->>User: Display friendly "Car not found"
+    else Car Not Available / Already Sold
+        SS-->>UI: throws CarNotAvailableException
+        UI-->>User: Display "Car is already sold/reserved"
+    else Car Available (or reserved by this buyer)
+        SS->>CAR: setStatus(Status.SOLD)
+        SS->>SS: create Sale(nextSaleId, carId, buyer, seller, date, price)
+        
+        rect rgb(240, 248, 255)
+            Note over SS,SR: Atomic persistence step
+            SS->>CR: save(car)
+            SS->>SR: save(sale)
+        end
+        
+        alt Persistence Fails
+            Note over SS,CAR: Rollback in-memory status
+            SS->>CAR: setStatus(Status.AVAILABLE)
+            SS-->>UI: throws RepositoryException
+            UI-->>User: Display "Save failed, sale cancelled"
+        else Persistence Succeeded
+            SS->>LOG: log("SELL_CAR", saleDetails)
+            SS-->>UI: return Sale
+            deactivate SS
+            UI-->>User: Render box-drawing purchase receipt
+        end
+    end

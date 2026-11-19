@@ -1,0 +1,66 @@
+flowchart TD
+    subgraph UI_App ["UI & App Layer (com.revline.app / com.revline.ui)"]
+        RevLineApp["RevLineApp"]
+        MenuController["MenuController"]
+        ConsoleTable["ConsoleTable"]
+        InputReader["InputReader"]
+        Banner["Banner"]
+    end
+
+    subgraph Service_Layer ["Service Layer (com.revline.service)"]
+        InventoryService["InventoryService"]
+        SearchService["SearchService"]
+        FilterBuilder["FilterBuilder"]
+        SalesService["SalesService"]
+        ReportService["ReportService"]
+        DataToolsService["DataToolsService"]
+        UndoManager["UndoManager"]
+        WaitlistService["WaitlistService"]
+        RecentlyViewed["RecentlyViewed (LRU)"]
+    end
+
+    subgraph Repository_Layer ["Repository Layer (com.revline.repository)"]
+        RepositoryInterface["Repository&lt;T, ID&gt;"]
+        CarRepoInterface["CarRepository"]
+        SaleRepoInterface["SaleRepository"]
+        FileCarRepo["FileCarRepository"]
+        FileSaleRepo["FileSaleRepository"]
+        JdbcCarRepo["JdbcCarRepository"]
+        JdbcSaleRepo["JdbcSaleRepository"]
+        DatabaseManager["DatabaseManager"]
+    end
+
+    subgraph Concurrency_Layer ["Concurrency (com.revline.concurrency)"]
+        AutoSaveThread["AutoSaveThread (Daemon)"]
+        ExpiryThread["ReservationExpiryThread (Daemon)"]
+        RequestQueue["PurchaseRequestQueue"]
+        SalesProcessor["SalesProcessor"]
+        ConcurrencyLab["ConcurrencyLab"]
+    end
+
+    subgraph Domain_Model ["Domain Model (com.revline.model)"]
+        Vehicle["Vehicle (Abstract)"]
+        Car["Car"]
+        Sale["Sale"]
+        Reservation["Reservation"]
+        AuditEntry["AuditEntry"]
+        FuelType["FuelType (Enum)"]
+        Status["Status (Enum)"]
+    end
+
+    subgraph Utility_Layer ["Utilities & Exceptions (com.revline.util)"]
+        Validator["Validator"]
+        AppLogger["AppLogger"]
+        FileUtil["FileUtil"]
+        TokenParser["TokenScriptParser"]
+        Exceptions["RevLineException Hierarchy"]
+    end
+
+    UI_App --> Service_Layer
+    Service_Layer --> Repository_Layer
+    Service_Layer --> Concurrency_Layer
+    Repository_Layer --> Domain_Model
+    Service_Layer --> Domain_Model
+    UI_App --> Domain_Model
+    Service_Layer --> Utility_Layer
+    Repository_Layer --> Utility_Layer

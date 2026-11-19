@@ -1,0 +1,30 @@
+# Build output
+out/
+*.class
+
+# Database
+*.db
+
+# Backups (runtime generated)
+data/backups/
+
+# Logs (runtime generated)
+logs/*.log
+
+# Course materials / handouts (keep private)
+reference/course/
+
+# IDE folders
+.idea/
+*.iml
+.vscode/
+.project
+.classpath
+.settings/
+*.swp
+*~
+
+# OS / Office temporary files
+Thumbs.db
+.DS_Store
+~$*

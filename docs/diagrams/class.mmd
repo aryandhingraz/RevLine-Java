@@ -1,0 +1,115 @@
+classDiagram
+    class Describable {
+        <<interface>>
+        +describe() String
+    }
+
+    class Vehicle {
+        <<abstract>>
+        #int id
+        #String brand
+        #String model
+        #double price
+        #int createdCount$
+        +getId() int
+        +getBrand() String
+        +getModel() String
+        +getPrice() double
+        +describe()* String
+    }
+
+    class Car {
+        -int topSpeed
+        -int horsepower
+        -double acceleration
+        -FuelType fuelType
+        -Status status
+        +getTopSpeed() int
+        +getHorsepower() int
+        +getAcceleration() double
+        +getFuelType() FuelType
+        +getStatus() Status
+        +copy() Car
+        +toCsv() String
+        +fromCsv(String, int)$ Car
+        +compareTo(Car) int
+        +describe() String
+    }
+
+    class FuelType {
+        <<enumeration>>
+        PETROL
+        HYBRID
+        ELECTRIC
+        +label() String
+        +fromString(String)$ FuelType
+    }
+
+    class Status {
+        <<enumeration>>
+        AVAILABLE
+        RESERVED
+        SOLD
+        +canTransitionTo(Status) boolean
+    }
+
+    class Sale {
+        -int saleId
+        -int carId
+        -String buyerName
+        -String sellerName
+        -LocalDate saleDate
+        -double price
+        +getSaleId() int
+        +getCarId() int
+        +getBuyerName() String
+        +getSellerName() String
+        +getSaleDate() LocalDate
+        +getPrice() double
+        +toCsv() String
+        +fromCsv(String, int)$ Sale
+    }
+
+    class Reservation {
+        -int carId
+        -String buyerName
+        -LocalDateTime expiresAt
+        +getCarId() int
+        +getBuyerName() String
+        +getExpiresAt() LocalDateTime
+        +isExpired() boolean
+        +compareTo(Reservation) int
+    }
+
+    class Repository~T, ID~ {
+        <<interface>>
+        +findAll() List~T~
+        +findById(ID) T
+        +save(T) void
+        +deleteById(ID) boolean
+        +saveAll(List~T~) void
+        +count() int
+    }
+
+    class CarRepository {
+        <<interface>>
+        +findByStatus(Status) List~Car~
+        +findByPriceRange(double, double) List~Car~
+        +nextId() int
+    }
+
+    class SaleRepository {
+        <<interface>>
+        +findByCarId(int) List~Sale~
+    }
+
+    Describable <|.. Vehicle
+    Vehicle <|-- Car
+    Car --> FuelType
+    Car --> Status
+    Repository <|-- CarRepository
+    Repository <|-- SaleRepository
+    CarRepository ..> Car
+    SaleRepository ..> Sale
+    Sale --> Car : references carId
+    Reservation --> Car : references carId

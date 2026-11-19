@@ -1,0 +1,10 @@
+stateDiagram-v2
+    [*] --> AVAILABLE : Vehicle added to showroom
+
+    AVAILABLE --> RESERVED : reserve(carId, buyer, minutes)
+    AVAILABLE --> SOLD : sellCar(carId, buyer) [direct purchase]
+
+    RESERVED --> AVAILABLE : cancelReservation() OR timer expires (purgeExpired)
+    RESERVED --> SOLD : sellCar(carId, buyer) [reservation holder buys]
+
+    SOLD --> [*] : Terminal state (archived in sales history)

@@ -1,0 +1,43 @@
+sequenceDiagram
+    autonumber
+    actor Seller as Seller
+    participant UI as MenuController
+    participant IN as InputReader
+    participant IS as InventoryService (synchronized)
+    participant VAL as Validator
+    participant CR as CarRepository
+    participant UNDO as UndoManager
+    participant LOG as AppLogger
+
+    Seller->>UI: Select [1] Add New Car
+    UI->>IN: Read brand, model, price, speed, fuel, hp, accel
+    IN-->>UI: Raw input strings / numbers
+    UI->>IS: addCar(carData)
+    activate IS
+    Note over IS: synchronized(lock)
+
+    IS->>VAL: validateCarSpecs(price, speed, hp, accel, fuel)
+    alt Invalid Specs
+        VAL-->>IS: throws InvalidCarException
+        IS-->>UI: re-throw InvalidCarException
+        UI-->>Seller: Print specific validation error & re-prompt
+    else Valid Specs
+        VAL-->>IS: OK
+
+        IS->>IS: Check duplicate key (brand + "|" + model) in HashSet
+        alt Duplicate Brand & Model
+            IS-->>UI: throws InvalidCarException("Car already exists")
+            UI-->>Seller: Print duplicate warning
+        else Unique Vehicle
+            IS->>CR: nextId()
+            CR-->>IS: newId
+            IS->>IS: Instantiate Car(newId, ...)
+            IS->>IS: Add to ArrayList & HashMap index
+            IS->>CR: save(car)
+            IS->>UNDO: push(UndoAction.ADD, car)
+            IS->>LOG: log("ADD_CAR", carDetails)
+            IS-->>UI: return new Car
+            deactivate IS
+            UI-->>Seller: Render success frame with assigned ID
+        end
+    end

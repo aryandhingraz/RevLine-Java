@@ -1,0 +1,30 @@
+erDiagram
+    CARS ||--o{ SALES : "purchased_in"
+    
+    CARS {
+        int car_id PK
+        string brand
+        string model
+        decimal price
+        int top_speed
+        string fuel_type
+        int horsepower
+        decimal acceleration
+        string status
+    }
+
+    SALES {
+        int sale_id PK
+        int car_id FK
+        string seller_name
+        string buyer_name
+        date sale_date
+        decimal price
+    }
+
+    AUDIT_LOG {
+        int log_id PK
+        string actor_name
+        string action
+        timestamp created_at
+    }
