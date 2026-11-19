@@ -18,4 +18,12 @@ public interface SaleRepository extends Repository<Sale, Integer> {
      * @throws RepositoryException on persistence failure
      */
     List<Sale> findByCarId(int carId) throws RepositoryException;
+
+    /**
+     * Generates or calculates the next unique integer ID for a new sale transaction.
+     *
+     * @return next unique ID
+     * @throws RepositoryException on failure
+     */
+    int nextId() throws RepositoryException;
 }
