@@ -40,8 +40,9 @@ public final class MenuPrinter {
         System.out.println("║  [4] Delete Supercar from Inventory                                ║");
         System.out.println("║  [5] Undo Last Inventory Action [EX-7]                             ║");
         System.out.println("║  [6] Sales Transaction History & Receipts                          ║");
-        System.out.println("║  [7] Showroom Financial Summary & Stock Valuation                  ║");
-        System.out.println("║  [8] View System Audit Log (Recent Operations)                     ║");
+        System.out.println("║  [7] Advanced Analytics & Reports (R1-R15 Streams & Text Export)   ║");
+        System.out.println("║  [8] Concurrency Lab (5 Deterministic Multithreading Demos - L9-16)║");
+        System.out.println("║  [9] View System Audit Log (Recent Operations)                     ║");
         System.out.println("║                                                                    ║");
         System.out.println("║  [S] Switch to BUYER / CLIENT VIEW                                 ║");
         System.out.println("║  [0] Exit Application                                              ║");
@@ -76,6 +77,36 @@ public final class MenuPrinter {
         System.out.println("║  [4] Performance Filter (Min Speed & Min Horsepower)               ║");
         System.out.println("║  [5] Available Cars Only                                           ║");
         System.out.println("║  [0] Back to Menu                                                  ║");
+        System.out.println("╚════════════════════════════════════════════════════════════════════╝");
+    }
+
+    public static void printReportsMenu() {
+        System.out.println();
+        System.out.println("╔════════════════════════════════════════════════════════════════════╗");
+        System.out.println("║ SHOWROOM ANALYTICS & REPORTS (R1-R15 Streams & Lambdas - L21-L23)  ║");
+        System.out.println("╠════════════════════════════════════════════════════════════════════╣");
+        System.out.println("║  [1] Executive Analytics Summary (Full R1-R15 Suite)               ║");
+        System.out.println("║  [2] Price Band Distribution Matrix (R13 2D Array int[3][4])       ║");
+        System.out.println("║  [3] Top-N Supercars by Horsepower (R6 - EX-4)                     ║");
+        System.out.println("║  [4] Average Price by Brand (R7 - EX-5)                            ║");
+        System.out.println("║  [5] Fastest 0-100 km/h Acceleration per Fuel Type (R12)           ║");
+        System.out.println("║  [6] Stream Laziness & Short-Circuit Demonstration (R15)           ║");
+        System.out.println("║  [7] Export Analytics Report to File (data/exports)                ║");
+        System.out.println("║  [0] Back to Management Menu                                       ║");
+        System.out.println("╚════════════════════════════════════════════════════════════════════╝");
+    }
+
+    public static void printConcurrencyLabMenu() {
+        System.out.println();
+        System.out.println("╔════════════════════════════════════════════════════════════════════╗");
+        System.out.println("║ REVLINE CONCURRENCY LAB (Multithreading Demonstrations - L9-L16)   ║");
+        System.out.println("╠════════════════════════════════════════════════════════════════════╣");
+        System.out.println("║  [1] Race Condition Proof (UnsafeCounter vs SafeCounter - L13,14)  ║");
+        System.out.println("║  [2] Double-Sell Showdown (20 Concurrent Buyers Race - L13, 14)    ║");
+        System.out.println("║  [3] Thread Lifecycle & Priority Tracer (getState() - L11, 12)     ║");
+        System.out.println("║  [4] Producer-Consumer Bounded Buffer Pipeline (L15, 16)           ║");
+        System.out.println("║  [5] Thread Interruption & Memory Visibility (L10, 14)             ║");
+        System.out.println("║  [0] Back to Management Menu                                       ║");
         System.out.println("╚════════════════════════════════════════════════════════════════════╝");
     }
 }

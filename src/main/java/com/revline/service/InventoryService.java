@@ -361,6 +361,21 @@ public class InventoryService {
         }
     }
 
+    /**
+     * Persists a complete point-in-time snapshot of the inventory to underlying storage.
+     * Synchronized on the internal monitor lock to prevent inconsistent state capture (L13).
+     *
+     * @throws RepositoryException if persistence fails
+     */
+    public void saveSnapshot() throws RepositoryException {
+        synchronized (lock) {
+            repository.saveAll(findAll());
+            if (logger != null) {
+                logger.log("SYSTEM", "SNAPSHOT_SAVED", "Inventory snapshot saved (" + cars.size() + " vehicles)");
+            }
+        }
+    }
+
     public int countAvailable() {
         synchronized (lock) {
             int available = 0;
