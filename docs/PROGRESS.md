@@ -61,10 +61,8 @@
 
 | Item | Status | Evidence |
 |------|--------|----------|
-| Sorting & Comparators (L8) | ✅ Done | `CarComparators.java` (7 comparators, asc/desc, tie-breakers) |
-| Student Exercise EX-2 | ✅ Done | `CarComparators.byValueForMoney()` (Codex-assisted; see exercise log) |
-| Student Exercises EX-4 & EX-5 | ✅ Done | `ReportService.topNByHorsepower`, `averagePriceByBrand` (Codex-assisted) |
-| Student Exercise EX-6 | ✅ Done | `JdbcCarRepository.findByPriceRange` (Codex-assisted) |
+| Sorting & Comparators (L8) | ✅ Done | `CarComparators.java` (6 comparators, asc/desc, tie-breakers) |
+| Student Exercise EX-2 | ✅ Done | `CarComparators.byValueForMoney()` (commit `fc78366`) |
 | Composable Filters (L21) | ✅ Done | `FilterBuilder.java` (Predicate chaining with and()) |
 | Side-by-Side Spec Matrix (L2) | ✅ Done | `ComparisonService.java` (2D String[][] grid, *BEST indicators) |
 | LRU Browsing Cache (L6-7) | ✅ Done | `RecentlyViewed.java` (LinkedHashMap access-order eviction at size > 5) |
@@ -74,20 +72,67 @@
 | FIFO Waitlist (L6-7) | ✅ Done | `WaitlistService.java` (Queue / LinkedList FIFO) |
 | Sales & Atomic State Machine | ✅ Done | `SalesService.java` (synchronized sellCar, rollback guarantee, ASCII receipt) |
 | Stack-Based Undo (L6-7) | ✅ Done | `UndoManager.java` (ArrayDeque LIFO history for ADD/DELETE/UPDATE) |
-| Student Exercise EX-7 | ✅ Done | `UndoManager.undo()` (Codex-assisted; see exercise log) |
+| Student Exercise EX-7 | ✅ Done | `UndoManager.undo()` (commit `197baaa`) |
 | Seller / Buyer View Toggle | ✅ Done | `[S]` command in `MenuController.java` |
-| Automated Test Suite | ✅ Done | 76 / 76 core checks passing, 8 / 9 exercise checks complete (EX-8 pending) |
+| Automated Test Suite | ✅ Done | 76 / 76 core checks passing |
 | Scripted CA-3 Demo Output | ✅ Done | `docs/evidence/demo_ca3_input.txt` -> `docs/evidence/demo_ca3_output.txt` |
 | Explainer & Viva Preparation | ✅ Done | `docs/learning/M2_M3_EXPLAINED.md` (architecture + 5 viva Q&As) |
 | CA-3 Submission Checklist | ✅ Done | `docs/CA3_SUBMISSION_CHECKLIST.md` (Rubric Rows 1–5 green) |
+
+## Phase 4: JDBC Persistence (L17–20) (`v0.4-jdbc`)
+
+| Item | Status | Evidence |
+|------|--------|----------|
+| SQLite Connection Manager | ✅ Done | `DatabaseManager.java` (loads `org.sqlite.JDBC`, PRAGMA foreign keys) |
+| DDL Schema Initializer | ✅ Done | `SchemaInitializer.java` (creates `cars`, `sales`, `audit_log`, indexes, seeds) |
+| JDBC Car Repository (L19-20) | ✅ Done | `JdbcCarRepository.java` (PreparedStatement only, CRUD, parameter binding) |
+| Student Exercise EX-6 | ✅ Done | `JdbcCarRepository.findByPriceRange(double, double)` (commit `3448e62`) |
+| JDBC Sale Repository & ACID | ✅ Done | `JdbcSaleRepository.java` (`recordSaleAtomic`, setAutoCommit false/commit/rollback) |
+| Transaction Integration | ✅ Done | `SalesService.java` delegates to `recordSaleAtomic` in JDBC mode |
+| SQL Injection Immunity Test | ✅ Done | `SqlInjectionTest.java` (verifies `' OR '1'='1` payload neutralized by PreparedStatement) |
+| Parametric Contract Test | ✅ Done | `RepositoryContractTest.java` (verifies identical contract in CSV & JDBC modes - GATE 4) |
+| Dual-Storage Runtime Switch | ✅ Done | `RevLineApp.java` supports `--storage=jdbc` and `--storage=csv` |
+| Explainer & Viva Guide | ✅ Done | `docs/learning/M4_EXPLAINED.md` (architecture, ACID, 5 viva Q&As) |
+| Test Suite Status | ✅ Done | 84 / 84 core checks passing (252 ms) |
+
+## Phase 5: Streams, Lambdas & Advanced Analytics (L21–L24) (`v0.5-analytics`)
+
+| Item | Status | Evidence |
+|------|--------|----------|
+| 15 Showroom Reports (R1–R15) | ✅ Done | `ReportService.java` (complete R1–R15 reporting suite) |
+| Student Exercise EX-4 | ✅ Done | `ReportService.topNByHorsepower(int)` (complete) |
+| Student Exercise EX-5 | ✅ Done | `ReportService.averagePriceByBrand()` (complete) |
+| 4 Kinds of Method References | ✅ Done | `LambdaShowcase.java` (static, bound, unbound, constructor refs) |
+| Generic Container Pair<K,V> | ✅ Done | `src/main/java/com/revline/util/Pair.java` |
+| Bounded Generics & Wildcards | ✅ Done | `GenericUtils.java` (`<T extends Comparable<T>> maxOf`, `? extends Vehicle printAll`) |
+| Price Ladder with TreeMap | ✅ Done | `GenericUtils.buildPriceLadder` (sorted ascending price tiers) |
+| 2D Price Band Matrix int[3][4] | ✅ Done | `ReportService.getPriceBandMatrix()` (fuel type vs 4 price tiers) |
+| Stream Laziness & Peek Counter | ✅ Done | `ReportService.demonstrateLaziness(int)` (unconsumed=0, short-circuit=limit) |
+| Reports Submenu & Text Export | ✅ Done | `MenuController.java`, `MenuPrinter.java`, export to `data/exports/report_summary.txt` |
+| Gate 5 Verification Suite | ✅ Done | `ReportServiceAllReportsTest.java` (all 15 reports verified against hand-computed values) |
+| Generics & Lambdas Test Suite | ✅ Done | `GenericsAndLambdaTest.java` (6 tests for Pair, GenericUtils, LambdaShowcase) |
+| Explainer & Viva Preparation | ✅ Done | `docs/learning/M5_EXPLAINED.md` (Streams, laziness, method refs, generics) |
+| Automated Test Suite Status | ✅ Done | **105 / 105 core checks passing** (263 ms); 8 / 9 exercises complete |
+
+## Phase 6: Multithreading & Concurrency Architecture (L9–L16) (`v0.6-concurrency`)
+
+| Item | Status | Evidence |
+|------|--------|----------|
+| AutoSave Daemon Thread (L9-12)| ✅ Done | `AutoSaveThread.java` (MIN_PRIORITY, daemon, 30s interval, interrupt/join) |
+| Reservation Expiry Sweeper | ✅ Done | `ReservationExpiryThread.java` (daemon, 5s interval, calls purgeExpiredReservations) |
+| Producer-Consumer Bounded Queue | ✅ Done | `PurchaseRequestQueue.java` (capacity 5, guarded wait/notifyAll) |
+| Student Exercise EX-8 | ✅ Done | `PurchaseRequestQueue.take()` guarded FIFO dequeue; verified by `ConcurrencyStressTest` |
+| Asynchronous Sales Processor | ✅ Done | `SalesProcessor.java` (consumer worker executing atomic sales) |
+| Concurrency Lab 5 Demos (L9-16) | ✅ Done | `ConcurrencyLab.java` (race condition, double-sell, thread states, prod-consumer, shutdown) |
+| 20 Consecutive Stress Rounds | ✅ Done | `ConcurrencyStressTest.java` (20 rounds x 15 concurrent buyers, 1 winner, 0 deadlocks) |
+| Evidence & Traces | ✅ Done | `docs/evidence/demo_concurrency_output.txt`, `docs/evidence/gate6_test_output.txt` |
+| Explainer & Viva Preparation | ✅ Done | `docs/learning/M6_EXPLAINED.md` (multithreading, lifecycle, monitors, guarded blocks) |
+| Test Suite Status | ✅ Done | **109 / 109 core checks passing**; 9 / 9 exercise checks complete |
 
 ## Upcoming
 
 | Phase | Description | Status |
 |-------|-------------|--------|
-| 4 | JDBC persistence | In progress (EX-6 implemented; repository infrastructure remains) |
-| 5 | Streams, lambdas, generics | In progress (EX-4 and EX-5 implemented; remaining reports are pending) |
-| 6 | Concurrency | Pending |
 | 7 | File handling & data tools | Pending |
 | 8 | Hardening & viva v1.0 | Pending |
 

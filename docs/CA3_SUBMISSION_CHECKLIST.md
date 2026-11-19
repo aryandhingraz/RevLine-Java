@@ -14,7 +14,7 @@
 | **Public GitHub Repo** | [https://github.com/aryandhingraz/RevLine-Java](https://github.com/aryandhingraz/RevLine-Java) | Ready to push |
 | **Clean Build Script** | `scripts/build.bat` / `scripts/build.sh` (Java 17 target, `-Xlint:all`, 0 warnings) | ✅ PASS (0 warnings) |
 | **Automated Test Suite**| `scripts/test.bat` (76 core tests pass, in-house runner) | ✅ PASS (76/76 core tests) |
-| **Exercise Implementations** | EX-1 through EX-7 complete (8/9 checks); EX-8 remains for a later phase | ✅ Tracked in `EX_LOG.md` |
+| **Exercise Implementations** | EX-1 through EX-8 complete (9/9 checks) | ✅ Tracked in `EX_LOG.md` |
 | **Demo Script & Evidence** | `docs/DEMO_SCRIPT.md` + `docs/evidence/demo_ca3_output.txt` | ✅ Complete |
 | **Rubric Rows 1–5 Evidence**| Traceability matrix in `docs/RUBRIC_TRACEABILITY.md` | ✅ Complete |
 

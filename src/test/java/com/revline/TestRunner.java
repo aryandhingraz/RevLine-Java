@@ -281,6 +281,86 @@ public class TestRunner {
                 SalesServiceTest::testGenerateReceiptFormat));
         coreTests.add(new TestCase("SalesServiceTest.testPurgeExpiredReservationsRevertsStatus",
                 SalesServiceTest::testPurgeExpiredReservationsRevertsStatus));
+
+        // Database Manager & Schema Initialization (2 tests)
+        coreTests.add(new TestCase("DatabaseManagerTest.testConnectionAndPragmaForeignKeys",
+                DatabaseManagerTest::testConnectionAndPragmaForeignKeys));
+        coreTests.add(new TestCase("DatabaseManagerTest.testSchemaInitializerCreatesTablesAndSeeds",
+                DatabaseManagerTest::testSchemaInitializerCreatesTablesAndSeeds));
+
+        // SQL Injection Security Verification (1 test)
+        coreTests.add(new TestCase("SqlInjectionTest.testPreparedStatementImmunityToSqlInjection",
+                SqlInjectionTest::testPreparedStatementImmunityToSqlInjection));
+
+        // JDBC Sale Repository & Relational Transactions (3 tests)
+        coreTests.add(new TestCase("JdbcSaleRepositoryTest.testSaveAndFindAllJdbc",
+                JdbcSaleRepositoryTest::testSaveAndFindAllJdbc));
+        coreTests.add(new TestCase("JdbcSaleRepositoryTest.testFindByIdAndFindByCarIdJdbc",
+                JdbcSaleRepositoryTest::testFindByIdAndFindByCarIdJdbc));
+        coreTests.add(new TestCase("JdbcSaleRepositoryTest.testRecordSaleAtomicCommitAndRollback",
+                JdbcSaleRepositoryTest::testRecordSaleAtomicCommitAndRollback));
+
+        // Dual-Mode Repository Contract Suite (GATE 4) (2 tests)
+        coreTests.add(new TestCase("RepositoryContractTest.testCarRepositoryContractInBothModes",
+                RepositoryContractTest::testCarRepositoryContractInBothModes));
+        coreTests.add(new TestCase("RepositoryContractTest.testSaleRepositoryContractInBothModes",
+                RepositoryContractTest::testSaleRepositoryContractInBothModes));
+
+        // Advanced Stream Analytics & Reports R1-R15 (GATE 5) (15 tests)
+        coreTests.add(new TestCase("ReportServiceAllReportsTest.testR1AvailableCars",
+                ReportServiceAllReportsTest::testR1AvailableCars));
+        coreTests.add(new TestCase("ReportServiceAllReportsTest.testR2AvailableStockValue",
+                ReportServiceAllReportsTest::testR2AvailableStockValue));
+        coreTests.add(new TestCase("ReportServiceAllReportsTest.testR3TotalPortfolioValue",
+                ReportServiceAllReportsTest::testR3TotalPortfolioValue));
+        coreTests.add(new TestCase("ReportServiceAllReportsTest.testR4CarsByFuelType",
+                ReportServiceAllReportsTest::testR4CarsByFuelType));
+        coreTests.add(new TestCase("ReportServiceAllReportsTest.testR5Top3FastestCars",
+                ReportServiceAllReportsTest::testR5Top3FastestCars));
+        coreTests.add(new TestCase("ReportServiceAllReportsTest.testR6TopNByHorsepower",
+                ReportServiceAllReportsTest::testR6TopNByHorsepower));
+        coreTests.add(new TestCase("ReportServiceAllReportsTest.testR7AveragePriceByBrand",
+                ReportServiceAllReportsTest::testR7AveragePriceByBrand));
+        coreTests.add(new TestCase("ReportServiceAllReportsTest.testR8DistinctBrandsSorted",
+                ReportServiceAllReportsTest::testR8DistinctBrandsSorted));
+        coreTests.add(new TestCase("ReportServiceAllReportsTest.testR9Pagination",
+                ReportServiceAllReportsTest::testR9Pagination));
+        coreTests.add(new TestCase("ReportServiceAllReportsTest.testR10TotalRevenue",
+                ReportServiceAllReportsTest::testR10TotalRevenue));
+        coreTests.add(new TestCase("ReportServiceAllReportsTest.testR11RevenueByBuyer",
+                ReportServiceAllReportsTest::testR11RevenueByBuyer));
+        coreTests.add(new TestCase("ReportServiceAllReportsTest.testR12FastestPerFuelType",
+                ReportServiceAllReportsTest::testR12FastestPerFuelType));
+        coreTests.add(new TestCase("ReportServiceAllReportsTest.testR13PriceBandMatrix",
+                ReportServiceAllReportsTest::testR13PriceBandMatrix));
+        coreTests.add(new TestCase("ReportServiceAllReportsTest.testR14FormattedNamesList",
+                ReportServiceAllReportsTest::testR14FormattedNamesList));
+        coreTests.add(new TestCase("ReportServiceAllReportsTest.testR15LazinessDemo",
+                ReportServiceAllReportsTest::testR15LazinessDemo));
+
+        // Generics & Functional Programming / Lambdas (6 tests)
+        coreTests.add(new TestCase("GenericsAndLambdaTest.testPairContainer",
+                GenericsAndLambdaTest::testPairContainer));
+        coreTests.add(new TestCase("GenericsAndLambdaTest.testGenericUtilsMaxOf",
+                GenericsAndLambdaTest::testGenericUtilsMaxOf));
+        coreTests.add(new TestCase("GenericsAndLambdaTest.testGenericUtilsWildcardAndMap",
+                GenericsAndLambdaTest::testGenericUtilsWildcardAndMap));
+        coreTests.add(new TestCase("GenericsAndLambdaTest.testGenericUtilsPriceLadderTreeMap",
+                GenericsAndLambdaTest::testGenericUtilsPriceLadderTreeMap));
+        coreTests.add(new TestCase("GenericsAndLambdaTest.testLambdaShowcaseStandardInterfaces",
+                GenericsAndLambdaTest::testLambdaShowcaseStandardInterfaces));
+        coreTests.add(new TestCase("GenericsAndLambdaTest.testLambdaShowcaseFourMethodReferenceKinds",
+                GenericsAndLambdaTest::testLambdaShowcaseFourMethodReferenceKinds));
+
+        // Multithreading & Concurrency Stress Suite (GATE 6) (4 tests)
+        coreTests.add(new TestCase("ConcurrencyStressTest.testSafeCounterIncrementIntegrity",
+                ConcurrencyStressTest::testSafeCounterIncrementIntegrity));
+        coreTests.add(new TestCase("ConcurrencyStressTest.testAutoSaveThreadInterruption",
+                ConcurrencyStressTest::testAutoSaveThreadInterruption));
+        coreTests.add(new TestCase("ConcurrencyStressTest.testReservationExpiryThreadLifecycle",
+                ConcurrencyStressTest::testReservationExpiryThreadLifecycle));
+        coreTests.add(new TestCase("ConcurrencyStressTest.testDoubleSellStressTwentyRoundsNoDeadlock",
+                ConcurrencyStressTest::testDoubleSellStressTwentyRoundsNoDeadlock));
     }
 
     private static void registerExerciseChecks() {
@@ -301,6 +381,6 @@ public class TestRunner {
         exerciseChecks.add(new ExerciseCheck("EX-7", "UndoManager.undo(InventoryService)",
                 UndoManagerTest::testExercise7_undoOperation));
         exerciseChecks.add(new ExerciseCheck("EX-8", "PurchaseRequestQueue.take()",
-                () -> { throw new UnsupportedOperationException("Assigned for Phase 6."); }));
+                ConcurrencyStressTest::testExercise8PurchaseRequestQueueTake));
     }
 }

@@ -123,8 +123,8 @@ while (queue.size() >= capacity && active) {
 1. **Spurious Wakeups**: The operating system or JVM may wake a thread from `wait()` without an explicit `notify()` or `notifyAll()`.
 2. **State Invalidation**: Another thread may have acquired the lock first and consumed the slot before this thread resumed execution.
 
-### Student Exercise EX-8:
-The consumer method `PurchaseRequestQueue.take()` is assigned to the student. See `docs/learning/EX8_HINT.md` for full implementation details.
+### EX-8 Guarded Dequeue:
+`PurchaseRequestQueue.take()` waits while the queue is empty and active, returns `null` after shutdown when no requests remain, and notifies blocked producers after dequeuing a request. Its implementation is covered by the EX-8 check in `ConcurrencyStressTest`.
 
 ---
 

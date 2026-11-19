@@ -76,9 +76,210 @@
   - EX-7 (`UndoManager.undo()`): L6–7 Deque stack undo for ADD, DELETE, UPDATE. Complete in commit `197baaa`.
 - **Automated Tests**:
   - 76 / 76 core checks passing (`TestRunner.java`).
-  - 8 / 9 exercise checks complete; EX-8 remains [PENDING].
+  - 9 / 9 exercise checks complete; EX-1 through EX-8 verified [COMPLETE].
 - **CA-3 Package**:
   - `docs/CA3_SUBMISSION_CHECKLIST.md`: comprehensive submission readiness across Rubric Rows 1–5 and 8-minute demo walkthrough.
   - `docs/learning/M2_M3_EXPLAINED.md`: technical explainer and viva defense guide for Modules 2 and 3.
   - `docs/evidence/demo_ca3_input.txt` & `docs/evidence/demo_ca3_output.txt`: scripted execution log verifying full end-to-end functionality.
+- **Build Status**: **PASS** (`javac --release 17 -Xlint:all`, 0 warnings, 0 errors).
+
+### Phase 6: Multithreading & Concurrency Architecture (L9–L16) (`v0.6-concurrency`)
+- **Background Daemon Threads (L9–L12)**:
+  - `AutoSaveThread.java`: low-priority (`MIN_PRIORITY`) daemon thread with 30s interval; executes snapshot persistence via `inventoryService.saveSnapshot()`; cleanly stops on `interrupt()` and `join()`.
+  - `ReservationExpiryThread.java`: daemon thread sweeping `ReservationManager` min-heap every 5s; reverts expired holds to `AVAILABLE`.
+  - `RevLineApp.java`: boots daemons and hooks graceful termination via `Runtime.getRuntime().addShutdownHook`.
+- **Producer-Consumer Architecture (L15–L16)**:
+  - `PurchaseRequest.java`: immutable transaction carrier for concurrent sales requests.
+  - `PurchaseRequestQueue.java`: bounded buffer (capacity 5) with guarded blocks (`while(condition) wait()` and `notifyAll()`).
+  - **EX-8**: `PurchaseRequestQueue.take()` uses a guarded FIFO dequeue with `while`, `wait()`, and `notifyAll()`; verified by `ConcurrencyStressTest`.
+  - `SalesProcessor.java`: consumer worker thread processing requests from the bounded queue through `SalesService.sellCar()`.
+- **Interactive Concurrency Lab (L9–L16)**:
+  - `ConcurrencyLab.java`: 5 deterministic educational demonstrations integrated into Seller Menu `[8]`:
+    1. Race Condition Proof: `UnsafeCounter` (lost updates) vs `SafeCounter` (exact 40,000 count).
+    2. Double-Sell Showdown: 20 concurrent `BuyerTask` threads race on the same car (exactly 1 winner, 19 rejected).
+    3. Thread Lifecycle & Priority Tracer: traces `NEW -> RUNNABLE -> TIMED_WAITING -> BLOCKED -> WAITING -> TERMINATED` with priority and daemon explanation.
+    4. Producer-Consumer Pipeline: 3 buyer producers submitting requests to bounded queue and 1 consumer processor.
+    5. Thread Interruption & Memory Visibility: clean `interrupt()`/`join()` shutdown and `volatile` memory barrier awareness.
+- **GATE 6 Concurrency Stress Suite**:
+  - `ConcurrencyStressTest.java`: **20 consecutive stress rounds** of concurrent double-sell with 15 simultaneous threads per round. Zero deadlocks, exactly 1 winner per round, 100% deterministic invariants.
+- **Evidence & Traceability**:
+  - `docs/evidence/demo_concurrency_output.txt`: real execution output of all 5 Concurrency Lab demonstrations.
+  - `docs/evidence/gate6_test_output.txt`: automated test suite execution log.
+- **Documentation & Viva Guide**:
+  - `docs/learning/M6_EXPLAINED.md`: technical explainer covering multithreading, thread states, monitor synchronization, guarded blocks, and viva prep.
+- **Automated Tests**:
+  - **109 / 109 core checks passing** (`TestRunner.java`); 9 / 9 exercise checks complete.
+- **Build Status**: **PASS** (`javac --release 17 -Xlint:all`, 0 warnings, 0 errors).
+
+### Phase 5: Streams, Lambdas & Advanced Analytics (L21–24) (`v0.5-analytics`)
+- **Showroom Reporting Pipelines (R1–R15)**:
+  - `ReportService.java`: complete implementation of all 15 analytical reporting pipelines (R1 through R15) using Java 17 Streams, intermediate filter/map/sorted/skip/limit operations, and terminal collectors.
+  - R1: Available cars list (`filter(Status.AVAILABLE)`).
+  - R2: Stock value of available vehicles (`filter -> mapToDouble -> sum`).
+  - R3: Total portfolio valuation across entire fleet (`mapToDouble -> sum`).
+  - R4: Inventory counts grouped by fuel type (`groupingBy -> counting`, populated into `EnumMap`).
+  - R5: Top-3 fastest supercars (`sorted(topSpeed.reversed()) -> limit(3)`).
+  - R6: Top-N vehicles by horsepower (EX-4: `filter(!SOLD) -> sorted(hp.reversed()) -> limit(n) -> map(describe)`).
+  - R7: Average vehicle price grouped by brand (EX-5: `groupingBy(getBrand, averagingDouble)`).
+  - R8: Sorted list of distinct showroom brands (`map -> distinct -> sorted`).
+  - R9: Paginated catalog view (`sorted(byId) -> skip((page-1)*size) -> limit(size)`).
+  - R10: Total realized sales revenue (`sales.stream().mapToDouble.sum()`).
+  - R11: Sales revenue aggregated by buyer (`groupingBy(buyer, summingDouble)`).
+  - R12: Quickest 0–100 km/h acceleration per fuel type (`groupingBy(fuel, minBy(comparingDouble(accel)))`).
+  - R13: 2-D price band matrix `int[3][4]` mapping fuel categories vs 4 price tiers (`< $500k`, `$500k-$1M`, `$1M-$2M`, `>= $2M`).
+  - R14: Formatted comma-delimited vehicle titles string (`map -> collect(joining(", "))`).
+  - R15: Intermediate stream laziness and short-circuit demonstration using `peek` counters.
+- **Functional Programming & Method References (L21–22)**:
+  - `LambdaShowcase.java`: demonstrations of `Predicate`, `Consumer`, `Function`, `Supplier`, custom `@FunctionalInterface VehicleTransformer`, and all 4 kinds of method references (static, bound instance, unbound instance, constructor).
+- **Generics in Depth (L24)**:
+  - `Pair<K, V>`: type-safe generic pair container.
+  - `GenericUtils.java`: `<T extends Comparable<T>> maxOf` bounded method, `List<? extends Vehicle> printAll` upper-bounded wildcard method, and `buildPriceLadder` using `TreeMap`.
+- **UI Integration & Text Export**:
+  - `MenuPrinter.java` & `MenuController.java`: interactive Reports submenu with on-demand reporting and atomic file export to `data/exports/report_summary.txt`.
+- **Gate 5 Verification Suite (GATE 5)**:
+  - `ReportServiceAllReportsTest.java`: all 15 reports verified against independently hand-computed values.
+  - `GenericsAndLambdaTest.java`: 6 automated tests validating `Pair`, `GenericUtils`, and `LambdaShowcase`.
+- **Documentation & Viva Guide**:
+  - `docs/learning/M5_EXPLAINED.md`: technical explainer and viva defense guide for Streams, Lambdas, Method References, and Generics.
+- **Automated Tests**:
+  - **105 / 105 core checks passing** (`TestRunner.java`, 263 ms); 8 / 9 exercises complete.
+- **Build Status**: **PASS** (`javac --release 17 -Xlint:all`, 0 warnings, 0 errors).
+
+### Phase 6: Multithreading & Concurrency Architecture (L9–L16) (`v0.6-concurrency`)
+- **Background Daemon Threads (L9–L12)**:
+  - `AutoSaveThread.java`: low-priority (`MIN_PRIORITY`) daemon thread with 30s interval; executes snapshot persistence via `inventoryService.saveSnapshot()`; cleanly stops on `interrupt()` and `join()`.
+  - `ReservationExpiryThread.java`: daemon thread sweeping `ReservationManager` min-heap every 5s; reverts expired holds to `AVAILABLE`.
+  - `RevLineApp.java`: boots daemons and hooks graceful termination via `Runtime.getRuntime().addShutdownHook`.
+- **Producer-Consumer Architecture (L15–L16)**:
+  - `PurchaseRequest.java`: immutable transaction carrier for concurrent sales requests.
+  - `PurchaseRequestQueue.java`: bounded buffer (capacity 5) with guarded blocks (`while(condition) wait()` and `notifyAll()`).
+  - **EX-8**: `PurchaseRequestQueue.take()` uses a guarded FIFO dequeue with `while`, `wait()`, and `notifyAll()`; verified by `ConcurrencyStressTest`.
+  - `SalesProcessor.java`: consumer worker thread processing requests from the bounded queue through `SalesService.sellCar()`.
+- **Interactive Concurrency Lab (L9–L16)**:
+  - `ConcurrencyLab.java`: 5 deterministic educational demonstrations integrated into Seller Menu `[8]`:
+    1. Race Condition Proof: `UnsafeCounter` (lost updates) vs `SafeCounter` (exact 40,000 count).
+    2. Double-Sell Showdown: 20 concurrent `BuyerTask` threads race on the same car (exactly 1 winner, 19 rejected).
+    3. Thread Lifecycle & Priority Tracer: traces `NEW -> RUNNABLE -> TIMED_WAITING -> BLOCKED -> WAITING -> TERMINATED` with priority and daemon explanation.
+    4. Producer-Consumer Pipeline: 3 buyer producers submitting requests to bounded queue and 1 consumer processor.
+    5. Thread Interruption & Memory Visibility: clean `interrupt()`/`join()` shutdown and `volatile` memory barrier awareness.
+- **GATE 6 Concurrency Stress Suite**:
+  - `ConcurrencyStressTest.java`: **20 consecutive stress rounds** of concurrent double-sell with 15 simultaneous threads per round. Zero deadlocks, exactly 1 winner per round, 100% deterministic invariants.
+- **Evidence & Traceability**:
+  - `docs/evidence/demo_concurrency_output.txt`: real execution output of all 5 Concurrency Lab demonstrations.
+  - `docs/evidence/gate6_test_output.txt`: automated test suite execution log.
+- **Documentation & Viva Guide**:
+  - `docs/learning/M6_EXPLAINED.md`: technical explainer covering multithreading, thread states, monitor synchronization, guarded blocks, and viva prep.
+- **Automated Tests**:
+  - **109 / 109 core checks passing** (`TestRunner.java`); 9 / 9 exercise checks complete.
+- **Build Status**: **PASS** (`javac --release 17 -Xlint:all`, 0 warnings, 0 errors).
+### Phase 4: JDBC Persistence (L17–20) (`v0.4-jdbc`)
+- **Relational Persistence Infrastructure**:
+  - `DatabaseManager.java`: connection factory loading `org.sqlite.JDBC` driver, enabling `PRAGMA foreign_keys = ON;`.
+  - `SchemaInitializer.java`: DDL schema execution creating `cars`, `sales`, `audit_log`, candidate keys `UNIQUE(brand, model)`, checks, indexes, and idempotent auto-seeding.
+- **JDBC Repositories**:
+  - `JdbcCarRepository.java`: full CRUD implementation using `PreparedStatement` only, cursor iteration over `ResultSet`, typed getter mapping.
+  - `JdbcSaleRepository.java`: sales ledger persistence with transactional `recordSaleAtomic` using `setAutoCommit(false)`, `commit()`, and `rollback()`.
+- **Relational Transactions in Sales**:
+  - `SalesService.java` delegates to `JdbcSaleRepository.recordSaleAtomic` when operating in JDBC mode, ensuring multi-statement ACID safety.
+- **SQL Injection Security Demonstration**:
+  - `SqlInjectionTest.java`: proves parameter binding neutralizes `' OR '1'='1` and prevents unauthorized data exposure.
+- **Parametric Dual-Storage Contract (GATE 4)**:
+  - `RepositoryContractTest.java`: runs identical assertions across BOTH CSV and SQLite JDBC modes (`FileCarRepository` vs `JdbcCarRepository`, `FileSaleRepository` vs `JdbcSaleRepository`).
+- **Runtime Dual-Storage Switch**:
+  - `RevLineApp.java` supports launching with `--storage=jdbc` or default `--storage=csv`.
+  - `StorageBootstrap.java` provides `migrateCsvToJdbc` for cross-engine data migration.
+- **Documentation & Viva Guide**:
+  - `docs/learning/M4_EXPLAINED.md`: architecture document, ACID mechanics, and 5 viva defense questions.
+- **Automated Tests**:
+  - 84 / 84 core checks passing (`TestRunner.java`, 252 ms).
+- **Build Status**: **PASS** (`javac --release 17 -Xlint:all`, 0 warnings, 0 errors).
+
+### Phase 6: Multithreading & Concurrency Architecture (L9–L16) (`v0.6-concurrency`)
+- **Background Daemon Threads (L9–L12)**:
+  - `AutoSaveThread.java`: low-priority (`MIN_PRIORITY`) daemon thread with 30s interval; executes snapshot persistence via `inventoryService.saveSnapshot()`; cleanly stops on `interrupt()` and `join()`.
+  - `ReservationExpiryThread.java`: daemon thread sweeping `ReservationManager` min-heap every 5s; reverts expired holds to `AVAILABLE`.
+  - `RevLineApp.java`: boots daemons and hooks graceful termination via `Runtime.getRuntime().addShutdownHook`.
+- **Producer-Consumer Architecture (L15–L16)**:
+  - `PurchaseRequest.java`: immutable transaction carrier for concurrent sales requests.
+  - `PurchaseRequestQueue.java`: bounded buffer (capacity 5) with guarded blocks (`while(condition) wait()` and `notifyAll()`).
+  - **EX-8**: `PurchaseRequestQueue.take()` uses a guarded FIFO dequeue with `while`, `wait()`, and `notifyAll()`; verified by `ConcurrencyStressTest`.
+  - `SalesProcessor.java`: consumer worker thread processing requests from the bounded queue through `SalesService.sellCar()`.
+- **Interactive Concurrency Lab (L9–L16)**:
+  - `ConcurrencyLab.java`: 5 deterministic educational demonstrations integrated into Seller Menu `[8]`:
+    1. Race Condition Proof: `UnsafeCounter` (lost updates) vs `SafeCounter` (exact 40,000 count).
+    2. Double-Sell Showdown: 20 concurrent `BuyerTask` threads race on the same car (exactly 1 winner, 19 rejected).
+    3. Thread Lifecycle & Priority Tracer: traces `NEW -> RUNNABLE -> TIMED_WAITING -> BLOCKED -> WAITING -> TERMINATED` with priority and daemon explanation.
+    4. Producer-Consumer Pipeline: 3 buyer producers submitting requests to bounded queue and 1 consumer processor.
+    5. Thread Interruption & Memory Visibility: clean `interrupt()`/`join()` shutdown and `volatile` memory barrier awareness.
+- **GATE 6 Concurrency Stress Suite**:
+  - `ConcurrencyStressTest.java`: **20 consecutive stress rounds** of concurrent double-sell with 15 simultaneous threads per round. Zero deadlocks, exactly 1 winner per round, 100% deterministic invariants.
+- **Evidence & Traceability**:
+  - `docs/evidence/demo_concurrency_output.txt`: real execution output of all 5 Concurrency Lab demonstrations.
+  - `docs/evidence/gate6_test_output.txt`: automated test suite execution log.
+- **Documentation & Viva Guide**:
+  - `docs/learning/M6_EXPLAINED.md`: technical explainer covering multithreading, thread states, monitor synchronization, guarded blocks, and viva prep.
+- **Automated Tests**:
+  - **109 / 109 core checks passing** (`TestRunner.java`); 9 / 9 exercise checks complete.
+- **Build Status**: **PASS** (`javac --release 17 -Xlint:all`, 0 warnings, 0 errors).
+
+### Phase 5: Streams, Lambdas & Advanced Analytics (L21–24) (`v0.5-analytics`)
+- **Showroom Reporting Pipelines (R1–R15)**:
+  - `ReportService.java`: complete implementation of all 15 analytical reporting pipelines (R1 through R15) using Java 17 Streams, intermediate filter/map/sorted/skip/limit operations, and terminal collectors.
+  - R1: Available cars list (`filter(Status.AVAILABLE)`).
+  - R2: Stock value of available vehicles (`filter -> mapToDouble -> sum`).
+  - R3: Total portfolio valuation across entire fleet (`mapToDouble -> sum`).
+  - R4: Inventory counts grouped by fuel type (`groupingBy -> counting`, populated into `EnumMap`).
+  - R5: Top-3 fastest supercars (`sorted(topSpeed.reversed()) -> limit(3)`).
+  - R6: Top-N vehicles by horsepower (EX-4: `filter(!SOLD) -> sorted(hp.reversed()) -> limit(n) -> map(describe)`).
+  - R7: Average vehicle price grouped by brand (EX-5: `groupingBy(getBrand, averagingDouble)`).
+  - R8: Sorted list of distinct showroom brands (`map -> distinct -> sorted`).
+  - R9: Paginated catalog view (`sorted(byId) -> skip((page-1)*size) -> limit(size)`).
+  - R10: Total realized sales revenue (`sales.stream().mapToDouble.sum()`).
+  - R11: Sales revenue aggregated by buyer (`groupingBy(buyer, summingDouble)`).
+  - R12: Quickest 0–100 km/h acceleration per fuel type (`groupingBy(fuel, minBy(comparingDouble(accel)))`).
+  - R13: 2-D price band matrix `int[3][4]` mapping fuel categories vs 4 price tiers (`< $500k`, `$500k-$1M`, `$1M-$2M`, `>= $2M`).
+  - R14: Formatted comma-delimited vehicle titles string (`map -> collect(joining(", "))`).
+  - R15: Intermediate stream laziness and short-circuit demonstration using `peek` counters.
+- **Functional Programming & Method References (L21–22)**:
+  - `LambdaShowcase.java`: demonstrations of `Predicate`, `Consumer`, `Function`, `Supplier`, custom `@FunctionalInterface VehicleTransformer`, and all 4 kinds of method references (static, bound instance, unbound instance, constructor).
+- **Generics in Depth (L24)**:
+  - `Pair<K, V>`: type-safe generic pair container.
+  - `GenericUtils.java`: `<T extends Comparable<T>> maxOf` bounded method, `List<? extends Vehicle> printAll` upper-bounded wildcard method, and `buildPriceLadder` using `TreeMap`.
+- **UI Integration & Text Export**:
+  - `MenuPrinter.java` & `MenuController.java`: interactive Reports submenu with on-demand reporting and atomic file export to `data/exports/report_summary.txt`.
+- **Gate 5 Verification Suite (GATE 5)**:
+  - `ReportServiceAllReportsTest.java`: all 15 reports verified against independently hand-computed values.
+  - `GenericsAndLambdaTest.java`: 6 automated tests validating `Pair`, `GenericUtils`, and `LambdaShowcase`.
+- **Documentation & Viva Guide**:
+  - `docs/learning/M5_EXPLAINED.md`: technical explainer and viva defense guide for Streams, Lambdas, Method References, and Generics.
+- **Automated Tests**:
+  - **105 / 105 core checks passing** (`TestRunner.java`, 263 ms); 8 / 9 exercises complete.
+- **Build Status**: **PASS** (`javac --release 17 -Xlint:all`, 0 warnings, 0 errors).
+
+### Phase 6: Multithreading & Concurrency Architecture (L9–L16) (`v0.6-concurrency`)
+- **Background Daemon Threads (L9–L12)**:
+  - `AutoSaveThread.java`: low-priority (`MIN_PRIORITY`) daemon thread with 30s interval; executes snapshot persistence via `inventoryService.saveSnapshot()`; cleanly stops on `interrupt()` and `join()`.
+  - `ReservationExpiryThread.java`: daemon thread sweeping `ReservationManager` min-heap every 5s; reverts expired holds to `AVAILABLE`.
+  - `RevLineApp.java`: boots daemons and hooks graceful termination via `Runtime.getRuntime().addShutdownHook`.
+- **Producer-Consumer Architecture (L15–L16)**:
+  - `PurchaseRequest.java`: immutable transaction carrier for concurrent sales requests.
+  - `PurchaseRequestQueue.java`: bounded buffer (capacity 5) with guarded blocks (`while(condition) wait()` and `notifyAll()`).
+  - **EX-8**: `PurchaseRequestQueue.take()` uses a guarded FIFO dequeue with `while`, `wait()`, and `notifyAll()`; verified by `ConcurrencyStressTest`.
+  - `SalesProcessor.java`: consumer worker thread processing requests from the bounded queue through `SalesService.sellCar()`.
+- **Interactive Concurrency Lab (L9–L16)**:
+  - `ConcurrencyLab.java`: 5 deterministic educational demonstrations integrated into Seller Menu `[8]`:
+    1. Race Condition Proof: `UnsafeCounter` (lost updates) vs `SafeCounter` (exact 40,000 count).
+    2. Double-Sell Showdown: 20 concurrent `BuyerTask` threads race on the same car (exactly 1 winner, 19 rejected).
+    3. Thread Lifecycle & Priority Tracer: traces `NEW -> RUNNABLE -> TIMED_WAITING -> BLOCKED -> WAITING -> TERMINATED` with priority and daemon explanation.
+    4. Producer-Consumer Pipeline: 3 buyer producers submitting requests to bounded queue and 1 consumer processor.
+    5. Thread Interruption & Memory Visibility: clean `interrupt()`/`join()` shutdown and `volatile` memory barrier awareness.
+- **GATE 6 Concurrency Stress Suite**:
+  - `ConcurrencyStressTest.java`: **20 consecutive stress rounds** of concurrent double-sell with 15 simultaneous threads per round. Zero deadlocks, exactly 1 winner per round, 100% deterministic invariants.
+- **Evidence & Traceability**:
+  - `docs/evidence/demo_concurrency_output.txt`: real execution output of all 5 Concurrency Lab demonstrations.
+  - `docs/evidence/gate6_test_output.txt`: automated test suite execution log.
+- **Documentation & Viva Guide**:
+  - `docs/learning/M6_EXPLAINED.md`: technical explainer covering multithreading, thread states, monitor synchronization, guarded blocks, and viva prep.
+- **Automated Tests**:
+  - **109 / 109 core checks passing** (`TestRunner.java`); 9 / 9 exercise checks complete.
 - **Build Status**: **PASS** (`javac --release 17 -Xlint:all`, 0 warnings, 0 errors).

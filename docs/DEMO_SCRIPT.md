@@ -34,7 +34,7 @@
    ```
    *Point out*:
    - `Core Suite: 76/76 Passed`
-   - `Exercises: 8/9 Completed` (EX-1 through EX-7 complete; EX-8 remains assigned for a later phase).
+   - `Exercises: 9/9 Completed` (EX-1 through EX-8 complete).
 
 ---
 
