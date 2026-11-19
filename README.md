@@ -8,7 +8,7 @@ A layered, console-driven backend application that manages a supercar showroom �
 
 ## Problem Statement
 
-*(To be written by the student — see `docs/01_PROBLEM_STATEMENT.md`)*
+*(Authored personally by the student — see `docs/01_PROBLEM_STATEMENT.md` and `docs/02_OBJECTIVES_SCOPE.md`)*
 
 ---
 
@@ -16,18 +16,18 @@ A layered, console-driven backend application that manages a supercar showroom �
 
 | # | Feature | Status |
 |---|---------|--------|
-| 1 | Inventory CRUD (add / update / delete / view / browse) | Pending |
-| 2 | Search (by ID / multi-field text) | Pending |
-| 3 | Filter (brand / fuel / budget / speed / status, composable) | Pending |
-| 4 | Sort (6 comparators, asc/desc) | Pending |
-| 5 | Compare 2–3 cars side by side | Pending |
-| 6 | Reserve (timed) + Buy with receipt | Pending |
-| 7 | Waitlist + Undo | Pending |
-| 8 | Stream analytics (15 reports) | Pending |
-| 9 | Dual persistence (CSV + JDBC/SQLite) | Pending |
-| 10 | Import (legacy C / CSV / command script) + Export + Backup | Pending |
-| 11 | Concurrency Lab (5 demos) | Pending |
-| 12 | Audit logging | Pending |
+| 1 | Inventory CRUD (add / update / delete / view / browse) | ✅ Implemented (L5, L6-7) |
+| 2 | Search (by ID / multi-field text) | ✅ Implemented (EX-3 complete) |
+| 3 | Filter (brand / fuel / budget / speed / status, composable) | ✅ Implemented (`FilterBuilder` L21) |
+| 4 | Sort (6 comparators, asc/desc) | ✅ Implemented (`CarComparators` L8, EX-2 assigned) |
+| 5 | Compare 2–4 cars side by side (2D matrix) | ✅ Implemented (`ComparisonService` L2) |
+| 6 | Reserve (timed hold) + Buy with receipt | ✅ Implemented (`SalesService` L13-14) |
+| 7 | Waitlist + Undo (Stack/Queue) + LRU Recently Viewed | ✅ Implemented (`UndoManager` L6-7, EX-7 assigned) |
+| 8 | Stream analytics (15 reports) | Pending (Phase 5) |
+| 9 | Dual persistence (CSV + JDBC/SQLite) | CSV Complete / JDBC Pending (Phase 4) |
+| 10 | Import (legacy C / CSV / command script) + Export + Backup | Pending (Phase 7) |
+| 11 | Concurrency Lab (5 demos) | Pending (Phase 6) |
+| 12 | Audit logging | ✅ Implemented (`AppLogger` L2, L25) |
 
 ---
 
@@ -39,7 +39,7 @@ A layered, console-driven backend application that manages a supercar showroom �
 
 ### Clone & Build
 ```bash
-git clone https://github.com/<your-username>/RevLine-Java.git
+git clone https://github.com/aryandhingraz/RevLine-Java.git
 cd RevLine-Java
 scripts/build.bat          # Windows
 # bash scripts/build.sh    # Unix
@@ -73,19 +73,19 @@ Run `chcp 65001` in your terminal before starting the app, or the scripts handle
 ```
 RevLine-Java/
 ├─ src/main/java/com/revline/
-│  ├─ app/            Entry point, config, bootstrap
-│  ├─ ui/             Console tables, menus, input reader
-│  ├─ model/          Vehicle, Car, Sale, enums
-│  ├─ service/        Business logic (inventory, search, sales, reports)
-│  ├─ repository/     Data access (file + JDBC)
+│  ├─ app/            Entry point, config, bootstrap, MenuController
+│  ├─ ui/             Console tables, menus, input reader, banner
+│  ├─ model/          Vehicle, Car, Sale, Reservation, AuditEntry, enums
+│  ├─ service/        Business logic (Inventory, Search, Sales, Comparators, Undo, LRU)
+│  ├─ repository/     Data access (FileCarRepository, FileSaleRepository, interfaces)
 │  ├─ concurrency/    Threads, synchronisation demos
 │  └─ util/           Validator, logger, exceptions, file utilities
-├─ src/test/java/     In-house test runner + test classes
+├─ src/test/java/     In-house test runner + 76 automated test cases
 ├─ data/              Seed data, legacy import, sample files
 ├─ lib/               sqlite-jdbc driver jar
 ├─ scripts/           Build, run, test, demo scripts (.bat + .sh)
 ├─ sql/               Schema, seed, sample queries
-├─ docs/              All documentation, diagrams, evidence
+├─ docs/              All documentation, diagrams, evidence, viva guides
 └─ logs/              Runtime audit and error logs
 ```
 
@@ -109,19 +109,19 @@ To ensure authentic personal contribution and complete viva readiness, the follo
 
 | Member | Modules Owned |
 |--------|---------------|
-| *(to be filled by team)* | |
+| **Aryan Dhingra** (`aryandhingraz`) | Problem Statement, Scope, Validation (EX-1), Search Algorithm (EX-3), Value Comparator (EX-2), Undo Stack (EX-7) |
 
 ### Student-Owned Exercises
 | ID | Method | Syllabus | Status |
 |----|--------|----------|--------|
-| EX-1 | `Validator.isValidFuelType` + `parsePositiveDouble` | L2, L3 | Student-owned (Pending) |
-| EX-2 | `CarComparators.byValueForMoney()` | L8 | Student-owned (Pending) |
-| EX-3 | `SearchService.search(String)` | L2, L5 | Student-owned (Pending) |
-| EX-4 | `ReportService.topNByHorsepower(int)` | L21–23 | Student-owned (Pending) |
-| EX-5 | `ReportService.averagePriceByBrand()` | L23 | Student-owned (Pending) |
-| EX-6 | `JdbcCarRepository.findByPriceRange(double,double)` | L19–20 | Student-owned (Pending) |
-| EX-7 | `UndoManager.undo()` | L6–7 | Student-owned (Pending) |
-| EX-8 | `PurchaseRequestQueue.take()` | L15–16 | Student-owned (Pending) |
+| EX-1 | `Validator.isValidFuelType` + `parsePositiveDouble` | L2, L3 | ✅ Completed by Aryan (commit `7fbdfd3`) |
+| EX-2 | `CarComparators.byValueForMoney()` | L8 | ⏳ Assigned to Aryan (Active in Phase 3) |
+| EX-3 | `SearchService.search(String)` | L2, L5 | ✅ Completed by Aryan (commit `fc2bb19`) |
+| EX-4 | `ReportService.topNByHorsepower(int)` | L21–23 | Student-owned (Phase 5) |
+| EX-5 | `ReportService.averagePriceByBrand()` | L23 | Student-owned (Phase 5) |
+| EX-6 | `JdbcCarRepository.findByPriceRange(double,double)` | L19–20 | Student-owned (Phase 4) |
+| EX-7 | `UndoManager.undo()` | L6–7 | ⏳ Assigned to Aryan (Active in Phase 3) |
+| EX-8 | `PurchaseRequestQueue.take()` | L15–16 | Student-owned (Phase 6) |
 
 ---
 
@@ -133,7 +133,7 @@ To ensure authentic personal contribution and complete viva readiness, the follo
 | 0 | Understanding & planning | ✅ Complete |
 | 1 | Design & data architecture | ✅ Complete |
 | 2 | Prototype (v0.1) | ✅ Complete (`v0.1-prototype`) |
-| 3 | Core features (v0.3-ca3) | In progress |
+| 3 | Core features (v0.3-ca3) | 🏁 Ready for Gate 3 Review (`v0.3-ca3`) |
 | 4 | JDBC persistence | Pending |
 | 5 | Streams & generics | Pending |
 | 6 | Concurrency | Pending |
@@ -144,7 +144,8 @@ To ensure authentic personal contribution and complete viva readiness, the follo
 
 ## Limitations
 
-*(Will be documented honestly as the project progresses.)*
+- Currently operating under CSV flat-file persistence; ACID transactions with SQLite JDBC will be enabled in Phase 4.
+- In-memory reservations rely on wall-clock expiration checking; background daemon thread expiration will be introduced in Phase 6.
 
 ---
 
