@@ -52,8 +52,26 @@ public class SearchService {
      * @see docs/learning/EX3_HINT.md
      */
     public List<Car> search(String query) {
-        // --- STUDENT EXERCISE EX-3 ---
-        // Aryan will write this implementation.
-        throw new UnsupportedOperationException("Student exercise EX-3");
+        if (query == null || query.trim().isEmpty()) {
+            return inventoryService.findAll();
+        }
+
+        String[] tokens = query.trim().toLowerCase().split("\\s+");
+        List<Car> matches = new ArrayList<>();
+        for (Car car : inventoryService.findAll()) {
+            String searchableText = (car.getBrand() + " " + car.getModel() + " "
+                    + car.getFuelType().name()).toLowerCase();
+            boolean allMatch = true;
+            for (String token : tokens) {
+                if (!searchableText.contains(token)) {
+                    allMatch = false;
+                    break;
+                }
+            }
+            if (allMatch) {
+                matches.add(car);
+            }
+        }
+        return matches;
     }
 }
