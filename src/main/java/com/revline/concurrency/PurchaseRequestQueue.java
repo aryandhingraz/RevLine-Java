@@ -9,7 +9,7 @@ import java.util.Queue;
  * Bounded buffer queue for purchase requests demonstrating guarded blocks,
  * monitor wait/notifyAll, and producer-consumer synchronization (L15, L16).
  *
- * EX-8 is assigned here: the student must implement take().
+ * EX-8: FIFO consumer dequeue using a guarded wait block.
  */
 public class PurchaseRequestQueue {
 
@@ -46,22 +46,22 @@ public class PurchaseRequestQueue {
     }
 
     /**
-     * STUDENT EXERCISE EX-8: Consumer dequeue with guarded wait (L15, L16).
-     *
-     * In-syllabus requirements (L15, L16):
-     * - Must be synchronized on this monitor.
-     * - While queue is empty and active is true, call wait().
-     * - If active is false and queue is empty, return null.
-     * - Poll the head request from queue.
-     * - Call notifyAll() to wake any waiting producers blocked in put().
-     * - Return the polled request.
+     * Consumer dequeue with guarded wait (L15, L16).
      *
      * @return next PurchaseRequest, or null if stopped
      * @throws InterruptedException if interrupted while waiting
      */
     public synchronized PurchaseRequest take() throws InterruptedException {
-        // ASSIGNED TO STUDENT AS EX-8. DO NOT IMPLEMENT AUTOMATICALLY.
-        throw new UnsupportedOperationException("EX-8: Student to implement guarded wait() and take() in PurchaseRequestQueue.");
+        while (queue.isEmpty() && active) {
+            wait();
+        }
+        if (!active && queue.isEmpty()) {
+            return null;
+        }
+
+        PurchaseRequest request = queue.poll();
+        notifyAll();
+        return request;
     }
 
     /**
