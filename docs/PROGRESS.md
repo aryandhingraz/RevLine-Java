@@ -144,11 +144,36 @@
 | Explainer & Viva Preparation | ✅ Done | `docs/learning/M7_EXPLAINED.md` (byte vs char streams, StreamTokenizer, multi-catch) |
 | Automated Test Suite Status | ✅ Done | **116 / 116 core checks passing** (600 ms); **9 / 9 exercises complete** |
 
-## Upcoming
+## Phase 8: Final Hardening, Documentation & Mock Viva (`v1.0-final`)
 
-| Phase | Description | Status |
-|-------|-------------|--------|
-| 8 | Hardening & viva v1.0 | Pending |
+| Item | Status | Evidence |
+|------|--------|----------|
+| Class-Size & Maintainability Audit | ✅ Done | All Java source files in `src/main` <= 275 lines (max: `InventoryService.java` at 275 lines) |
+| Zero Compiler Warnings | ✅ Done | `javac --release 17 -Xlint:all` compiles with 0 warnings, 0 errors |
+| Modular Controller Architecture | ✅ Done | `BuyerMenuHandler`, `SellerMenuHandler`, `ReportsMenuHandler`, `DataToolsMenuHandler` |
+| Syllabus Concept Map (L1–L30) | ✅ Done | `docs/04_CONCEPT_MAP.md` mapping all 30 lectures to verified code pointers |
+| Legacy C to Java Migration Report | ✅ Done | `docs/05_C_TO_JAVA_REPORT.md` (function translations, 12 C defect fixes, UX fidelity) |
+| Comprehensive Test Plan | ✅ Done | `docs/TEST_PLAN.md` (116 tests across unit, boundary, negative, security, stress, round-trip) |
+| Viva Defense Master Bank | ✅ Done | `docs/VIVA.md` (85 categorized questions with code pointers) |
+| Mock Viva Evaluation Guide | ✅ Done | `docs/learning/MOCK_VIVA.md` (20 representative questions across Units I–VI) |
+| Rehearsed 10-Minute Demo Script | ✅ Done | `docs/DEMO_SCRIPT.md` (Acts 0–6, dual-storage, concurrency, fallback plan) |
+| Bug Log & Defect Tracking | ✅ Done | `docs/BUG_LOG.md` (BUG-001 through BUG-008 resolved with regression tests) |
+| Final Self-Audit (PART 17) | ✅ Done | `docs/FINAL_AUDIT.md` (all 14 audit criteria verified green) |
+| Changelog & Release Notes | ✅ Done | `CHANGELOG.md` updated in Keep-a-Changelog format through `v1.0-final` |
+| Test Suite Execution | ✅ Done | **116 / 116 core checks passing** (630 ms); **9 / 9 exercises complete** |
+| Milestone Status | ✅ Complete | Ready for `v1.0-final` local tagging and GitHub remote push |
+
+## Milestone Summary
+
+| Milestone | Tag | Test Suite Status | Exercise Status | Release Scope |
+|---|---|---|---|---|
+| Prototype | `v0.1-prototype` | 34 / 34 checks passing | EX-1 & EX-3 Complete | Prototype CRUD, FileCarRepository, safeWrite |
+| CA-3 Package | `v0.3-ca3` | 76 / 76 checks passing | EX-2 & EX-7 Complete | Comparators, Spec Matrix, LRU cache, Undo stack, Dual view |
+| JDBC Persistence | `v0.4-jdbc` | 84 / 84 checks passing | EX-6 Complete | SQLite DDL, PreparedStatement, SQL Injection Test, ACID transactions |
+| Analytical Streams | `v0.5-analytics` | 105 / 105 checks passing | EX-4 & EX-5 Complete | R1–R15 stream reports, method references, generics, price ladder |
+| Concurrency Architecture | `v0.6-concurrency` | 109 / 109 checks passing | EX-8 Complete | Daemons, PurchaseRequestQueue, 5 Lab demos, 20 stress rounds |
+| Enterprise Data Tools | `v0.7-datatools` | 116 / 116 checks passing | 9 / 9 Complete | Legacy C import, StreamTokenizer scripts, byte backup/restore |
+| **Final Release** | **`v1.0-final`** | **116 / 116 checks passing** | **9 / 9 Complete** | Full documentation suite, class size audit, mock viva, audit green |
 
 ## Risk Register
 

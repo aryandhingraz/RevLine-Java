@@ -1,0 +1,51 @@
+==========================================================================
+                 REVLINE SHOWROOM EXECUTIVE ANALYTICS REPORT              
+==========================================================================
+[R1]  Available Vehicles        : 15
+[R2]  Stock Value (Available)  : $20,633,598.00
+[R3]  Total Portfolio Value    : $22,737,598.00
+[R4]  Vehicles Per Fuel Type    : PETROL: 13 | HYBRID: 4 | ELECTRIC: 1
+[R5]  Top-3 Fastest Vehicles    :
+      1. Koenigsegg Jesko - 480 km/h ($3,000,000.00)
+      2. Koenigsegg Agera RS - 447 km/h ($2,500,000.00)
+      3. Bugatti Veyron SS - 431 km/h ($2,500,000.00)
+[R6]  Top-3 By Horsepower (EX-4):
+      1. #13: Koenigsegg Jesko | $3,000,000.00 | 480 km/h | 1600 HP | 2.5s 0-100 | Petrol | AVAILABLE
+      2. #1: Bugatti Chiron | $3,000,000.00 | 420 km/h | 1500 HP | 2.4s 0-100 | Petrol | AVAILABLE
+      3. #14: Koenigsegg Agera RS | $2,500,000.00 | 447 km/h | 1341 HP | 2.8s 0-100 | Petrol | AVAILABLE
+[R7]  Average Price By Brand    :
+      - Ferrari         : $953,500.00
+      - Lamborghini     : $422,804.00
+      - Audi            : $197,000.00
+      - Bugatti         : $2,750,000.00
+      - Tesla           : $135,990.00
+      - Porsche         : $327,500.00
+      - Pagani          : $1,700,000.00
+      - McLaren         : $727,500.00
+      - BMW             : $142,000.00
+      - Aston Martin    : $3,000,000.00
+      - Koenigsegg      : $2,750,000.00
+[R8]  Distinct Brands (11)       : Aston Martin, Audi, BMW, Bugatti, Ferrari, Koenigsegg, Lamborghini, McLaren, Pagani, Porsche, Tesla
+[R9]  Inventory Page 1 (size 5) :
+      #1 Bugatti Chiron ($3,000,000.00)
+      #2 Bugatti Veyron SS ($2,500,000.00)
+      #3 Ferrari LaFerrari ($1,400,000.00)
+      #4 Ferrari SF90 Stradale ($507,000.00)
+      #5 Lamborghini Aventador SVJ ($517,770.00)
+[R10] Total Realized Revenue    : $2,104,000.00
+[R11] Revenue By Buyer          :
+      - Legacy C Import : $2,104,000.00
+[R12] Fastest 0-100 By Fuel Type:
+      - Electric   : Tesla Model S Plaid (1.99 s)
+      - Hybrid     : Ferrari LaFerrari (2.40 s)
+      - Petrol     : Bugatti Chiron (2.40 s)
+[R13] Price Band Distribution   :
+Fuel Type    | < $500k      | $500k - $1M    | $1M - $2M      | >= $2M    
+-------------+--------------+----------------+----------------+-----------
+Petrol       | 6            | 1              | 1              | 5         
+Hybrid       | 0            | 1              | 2              | 1         
+Electric     | 1            | 0              | 0              | 0         
+[R14] Showroom Lineup Names     :
+      Bugatti Chiron, Bugatti Veyron SS, Ferrari LaFerrari, Ferrari SF90 Stradale, Lamborghini Aventador SVJ, Lamborghini Huracan STO, Porsche 911 Turbo S, Porsche Carrera GT, McLaren P1, McLaren 720S, Aston Martin Valkyrie, Tesla Model S Plaid, Koenigsegg Jesko, Koenigsegg Agera RS, Pagani Huayra, Pagani Zonda Cinque, BMW M5 CS, Audi R8 V10 Plus
+[R15] Stream Laziness Demo      : Unconsumed peek count = 0, Short-circuit count (limit 3) = 3
+==========================================================================

@@ -1,110 +1,151 @@
-# RevLine — 8-Minute Live Evaluation Demo Script
+# RevLine-Java 10-Minute Comprehensive Evaluation Demo Script
 
-> **Course**: 25CSE0202 Programming in Java (Unit VI)  
-> **Target Milestone**: CA-3 Submission (`v0.3-ca3`)  
-> **Presenter**: Aryan Dhingra (`aryandhingraz`)  
-> **Target Duration**: $\le 8$ Minutes
-
----
-
-## Timing Breakdown
-
-| Act | Phase | Focus | Allocated Time |
-|:---:|:------|:------|:--------------:|
-| **Act 0** | Code Quality & Verification | Zero-warning build & 76-test suite | 1.0 min |
-| **Act 1** | Showroom Client / Buyer Flow | Browse, Search, Sort, Compare, Reserve, Buy, LRU | 3.5 min |
-| **Act 2** | Showroom Management / Seller Flow | Inventory CRUD, Undo Stack (EX-7), Sales Ledger, Audit | 2.0 min |
-| **Act 3** | Architectural Viva Defense | Thread safety, Collections, Rubric Rows 1–5 | 1.5 min |
-| **Total** | | | **8.0 min** |
+> **Course**: 25CSE0202 Programming in Java (Chitkara University)  
+> **Milestone**: Final Release (`v1.0-final` / CA-4)  
+> **Student Presenter**: Aryan Dhingra (`aryandhingraz`)  
+> **Target Duration**: 10.0 Minutes  
+> **Environment**: Windows 11 / PowerShell, JDK 17 LTS, SQLite JDBC
 
 ---
 
-## Detailed Step-by-Step Script
+## 1. Timing Breakdown & Act Structure
 
-### Act 0: Clean Build & Test Verification (1:00)
-1. **Compile from a clean output directory** (the build script clears and recreates `out\main`):
+| Act | Module / Focus | Key Concepts & Deliverables | Target Time |
+|:---:|:---|:---|:---:|
+| **Act 0** | Build Quality & Test Suite | Clean compile (`-Xlint:all`), 116 tests, 9/9 exercises | 1.0 min |
+| **Act 1** | Showroom Buyer / Client View | Bidirectional `ListIterator`, search, compare, buy, LRU | 2.5 min |
+| **Act 2** | Management / Seller Flow | Add/update, O(1) duplicate guard, `UndoManager` stack (EX-7) | 1.5 min |
+| **Act 3** | Analytics & Executive Reports | 15 Stream pipelines (R1–R15), price band matrix, export | 1.5 min |
+| **Act 4** | Concurrency Lab & Stress Suite | 5 interactive demos, bounded buffer (EX-8), 20 stress rounds | 1.5 min |
+| **Act 5** | Enterprise Data Tools & Storage | Legacy C migration, `StreamTokenizer` script, byte backup | 1.0 min |
+| **Act 6** | Dual Storage & Fallback Plan | CSV vs SQLite JDBC (`--storage=jdbc`), ACID transactions | 1.0 min |
+| **Total** | | | **10.0 min** |
+
+---
+
+## 2. Detailed Execution Walkthrough
+
+### Act 0: Code Quality & Automated Test Verification (1:00)
+
+1. **Clean compilation with `-Xlint:all`**:
    ```powershell
    .\scripts\build.bat
    ```
-   *Point out*: `[PASS] Build succeeded with zero warnings.` using `javac --release 17 -Xlint:all`.
-   *Say to Examiner*: *"RevLine is built strictly against Java 17 LTS without third-party frameworks. The build starts by clearing its compiled output."*
-2. **Execute in-house automated test suite**:
+   - *Examiner cue*: Point to `[PASS] Build succeeded with zero warnings.`
+   - *Scripted line*: *"RevLine is built strictly against Java 17 LTS without third-party frameworks. Every class in the system is verified under 275 lines with zero compiler warnings."*
+
+2. **Execute in-house test suite**:
    ```powershell
    .\scripts\test.bat
    ```
-   *Point out*:
-   - `Core Suite: 76/76 Passed`
-   - `Exercises: 9/9 Completed` (EX-1 through EX-8 complete).
+   - *Examiner cue*: Point to `Core Suite: 116/116 Passed (~620 ms)` and `Exercises: 9/9 Completed`.
+   - *Scripted line*: *"Our zero-dependency in-house test runner executes 116 comprehensive unit, boundary, negative, security, stress, and round-trip checks in ~620 milliseconds."*
 
 ---
 
-### Act 1: Showroom Client / Buyer Flow (3:30)
-1. **Launch the application**:
+### Act 1: Showroom Buyer / Client Experience (2:30)
+
+1. **Launch application**:
    ```powershell
    .\scripts\run.bat
    ```
-   *Point out*: The C-style ASCII Boot Panel verifying storage file integrity (`data\cars.csv`), seed validation, and the RevLine banner.
+   - *Examiner cue*: Highlight the ASCII boot banner, database verification, and clean dual-view design.
+
 2. **Interactive Showroom Browser (Option `1`)**:
-   - Press `N` (Next) to advance to Car #2.
-   - Press `N` (Next) to advance to Car #3.
-   - Press `P` (Previous) to navigate back to Car #2.
-   - Press `Q` to return to menu.  
-   *Say to Examiner*: *"Here we demonstrate `ListIterator<Car>` (Lecture 6–7) enabling bidirectional traversal, dynamically logging each viewed vehicle into an LRU cache."*
-3. **Multi-Field Search & Filter (Option `2`)**:
-   - Choose Sub-option `2` (Multi-Field Search [EX-3]).
-   - Type: `Hybrid`
-   - *Point out*: It matches Ferraris, McLarens, and Aston Martins across brand, model, and fuel type.
-   - Return to menu and select Option `2` -> Sub-option `3` (Budget Filter: min `$200,000`, max `$500,000`) to show `FilterBuilder` composable predicates (Lecture 21).
-4. **Showroom Sorting (Option `3`)**:
-   - Select Option `1` (Price: Low to High).
-   - Select Option `7` (Value-for-Money [EX-2]).
-   - *Point out*: Custom `Comparator<Car>` sorting vehicles by horsepower-per-$100k ratio with 0-100 acceleration tie-breaker (Lecture 8).
-5. **Side-by-Side Spec Comparison (Option `4`)**:
-   - Number of cars: `2`
-   - Enter Car IDs: `1` (Bugatti Chiron) and `2` (Bugatti Veyron SS).
-   - *Point out*: The 2-D multi-dimensional matrix `String[8][2]` (Lecture 2) highlighting winning specs with `*BEST`.
-6. **Vehicle Hold Reservation (Option `5`)**:
-   - Car ID: `5` (Lamborghini Aventador SVJ)
-   - Buyer: `Bruce Wayne`
-   - Duration: `30` minutes.
-   - *Point out*: The vehicle status transitions to `RESERVED` and a priority hold is registered in `ReservationManager`.
-7. **Purchase Vehicle & Receipt Generation (Option `6`)**:
-   - Car ID: `2` (Bugatti Veyron SS)
-   - Buyer: `Tony Stark`
-   - Seller: `RevLine Showroom`
-   - Confirm: `y`
-   - *Point out*: The formal ASCII receipt generated on console, the vehicle status transitioning from `AVAILABLE` to `SOLD`, and atomic persistence in `FileSaleRepository`.
-8. **Recently Viewed Cache (Option `8`)**:
-   - *Point out*: `RecentlyViewed` (extending `LinkedHashMap` with `accessOrder = true`) displaying the last 5 viewed cars in reverse chronological order.
+   - Press `N` (Next) to view Car #2 (Bugatti Veyron SS).
+   - Press `N` to view Car #3.
+   - Press `P` (Previous) to return to Car #2.
+   - Press `Q` to exit browsing.
+   - *Scripted line*: *"Demonstrating `ListIterator<Car>` (L6–L7) for bidirectional navigation, dynamically registering each viewed car into our LRU cache."*
+
+3. **Search & Composable Filters (Option `2`)**:
+   - Select Option `2` (Search Text): enter `Hybrid`.
+   - Matches Ferrari LaFerrari, SF90, and McLaren P1 across brand, model, and fuel type.
+   - Select Option `3` (Budget Filter): enter min `$100,000`, max `$500,000`.
+   - *Scripted line*: *"Powered by `FilterBuilder` (L23) chaining composable `Predicate<Car>` streams."*
+
+4. **Value-for-Money Ranking (Option `3` -> `7`)**:
+   - Select Option `7` (Value for Money [EX-2]).
+   - *Scripted line*: *"Student-authored EX-2 comparator ranking horsepower-per-$100k ratio with acceleration tie-breakers."*
+
+5. **Side-by-Side Spec Matrix (Option `4`)**:
+   - Enter `2` cars: ID `1` (Chiron) and ID `12` (Tesla Model S Plaid).
+   - *Examiner cue*: Point out the 8-row comparison matrix highlighting lowest price, highest speed, highest HP, and quickest acceleration with `*BEST`.
+
+6. **Purchase Vehicle & Receipt Generation (Option `6`)**:
+   - Select Car `2` (Bugatti Veyron SS), Buyer: `Aryan Dhingra`, Rep: `RevLine Agent`, Confirm: `y`.
+   - *Examiner cue*: Point to the official ASCII receipt and status transition to `SOLD`.
+
+7. **Recently Viewed LRU Cache (Option `8`)**:
+   - Show the 5 most recently viewed vehicles ordered MRU to LRU.
 
 ---
 
-### Act 2: Management / Seller Flow & Undo (2:00)
-1. **Toggle to Seller View**:
+### Act 2: Management / Seller Flow & Undo Mechanics (1:30)
+
+1. **Switch to Seller Mode**:
    - Enter `S`.
-   - *Point out*: Clean role-based navigation toggle without complex security framework.
-2. **View Full Inventory (Option `1`)**:
-   - Show complete fleet table with updated statuses (`SOLD` for Car #2, `RESERVED` for Car #5).
-3. **Add New Supercar (Option `2`)**:
-   - Brand: `Aston Martin` | Model: `Valhalla` | Price: `800000` | Speed: `350` | Fuel: `2` (Hybrid) | HP: `950` | Accel: `2.5`
-   - *Point out*: Assigned ID generated automatically, duplicate-guard verification (`HashSet`), and snapshot pushed onto `UndoManager` stack.
-4. **Undo Last Action (Option `5` [EX-7])**:
+   - *Scripted line*: *"Toggles instantly between Client and Management views."*
+
+2. **Add Vehicle with Duplicate Guard (Option `2`)**:
+   - Attempt to add: Brand `Bugatti`, Model `Chiron`.
+   - *Examiner cue*: System immediately rejects duplicate via `HashSet<String>` duplicate guard.
+   - Add new car: Brand `Aston Martin`, Model `Valhalla`, Price `800000`, Speed `350`, Fuel `2` (Hybrid), HP `950`, Accel `2.5`.
+   - Successfully saved as Car #19; undo snapshot pushed.
+
+3. **Undo Last Action (Option `5` [EX-7])**:
    - Select Option `5`.
-   - *Point out*: `UndoManager` pops the `ArrayDeque` LIFO stack and cleanly removes the newly added car from inventory.
-5. **Sales Ledger & Receipt Reprint (Option `6`)**:
-   - Show the recorded transaction ledger (`data/sales.csv`).
-   - Reprint receipt for Sale #4.
-6. **Showroom Valuation & Audit Log (Options `7` & `8`)**:
-   - Option `7`: Active stock valuation excluding sold cars ($O(N)$ calculation).
-   - Option `8`: View system audit trail in `logs/audit.log` showing timestamps and actors.
-7. **Exit**:
-   - Enter `0`.
+   - *Examiner cue*: `UndoManager` pops the mutation stack (`ArrayDeque<UndoAction>`) and removes Car #19 from storage and in-memory indices.
+
+4. **Sales History & Receipt Reprint (Option `6`)**:
+   - Displays sales transaction ledger with all completed sales.
 
 ---
 
-### Act 3: Architectural Defense & Viva Readiness (1:30)
-*Briefly summarize to Examiner*:
-1. **Thread Synchronization**: `SalesService` and `InventoryService` share the same monitor lock (`inventoryService.getLock()`), preventing race conditions and deadlocks.
-2. **Safe Traversal**: `ReservationManager` uses `PriorityQueue<Reservation>` (min-heap) and `Iterator.remove()` to eliminate `ConcurrentModificationException` during expiration sweeps.
-3. **Data Structure Variety**: 10 distinct collection types utilized purposefully (`ArrayList`, `HashMap`, `HashSet`, `TreeSet`, `LinkedList`, `PriorityQueue`, `ArrayDeque`, `LinkedHashMap`, 2D Array `String[][]`).
-4. **Rubric Alignment**: Point to `docs/CA3_SUBMISSION_CHECKLIST.md` confirming full readiness across Rubric Rows 1 through 5.
+### Act 3: Analytical Streams & Executive Reporting (1:30)
+
+1. **Open Reports Menu (Option `7`)**:
+   - Option `1`: Full Executive Summary running all 15 Stream pipelines (R1–R15).
+   - Option `2`: Price Band Matrix (`int[3][4]`) mapping fuel types vs 4 price tiers.
+   - Option `3`: Top-N by Horsepower (`topNByHorsepower` - EX-4).
+   - Option `4`: Average Price by Brand (`averagePriceByBrand` - EX-5).
+   - Option `6`: Stream Laziness Proof (unconsumed peek counter = 0; short-circuit limit).
+   - Option `7`: Export report to `data/exports/report_summary.txt`.
+   - *Scripted line*: *"All 15 reports utilize Java 17 Streams, intermediate pipelines, primitive `DoubleStream`, and downstream collectors."*
+
+---
+
+### Act 4: Concurrency Lab & Deterministic Demos (1:30)
+
+1. **Open Concurrency Lab (Option `8`)**:
+   - **Demo 1**: Race condition proof (`UnsafeCounter` loses updates; `SafeCounter` achieves exact 40,000 count).
+   - **Demo 2**: Double-Sell Showdown (20 threads race on 1 car; exactly 1 winner, 19 rejected with 0 overselling).
+   - **Demo 3**: Thread Lifecycle Tracer (traces `NEW -> RUNNABLE -> TIMED_WAITING -> BLOCKED -> WAITING -> TERMINATED`).
+   - **Demo 4**: Producer-Consumer Pipeline (3 producers, 1 consumer, bounded buffer with wait/notify [EX-8]).
+   - **Demo 5**: Interruption & Memory Visibility (clean shutdown and `volatile` awareness).
+
+---
+
+### Act 5: Enterprise Data Tools & File Handling (1:00)
+
+1. **Open Data Tools Menu (Option `9`)**:
+   - Option `1`: Import legacy C flat-file (`cars.txt`) with 1/0 status flag mapping.
+   - Option `2`: Batch CSV import with line-by-line error reports (`data/reports/import_errors_*.txt`).
+   - Option `3`: Execute batch DSL commands via `StreamTokenizer` (`data/sample/bulk_import.txt`).
+   - Option `4` & `5`: Byte-stream binary backup and restore with byte-identical verification.
+   - Option `6`: Generate 50 synthetic test supercars for stress testing.
+
+---
+
+### Act 6: Dual Storage Engine & Fallback Plan (1:00)
+
+1. **SQLite Relational Mode**:
+   - Exit application (`0`).
+   - Launch in JDBC mode:
+     ```powershell
+     .\scripts\run.bat --storage=jdbc
+     ```
+   - *Examiner cue*: Boots with SQLite JDBC driver, enforces `PRAGMA foreign_keys = ON;`, candidate keys, and multi-statement ACID transactions.
+
+2. **Fallback Plan**:
+   - If SQLite or foreign key errors occur on examiner machine: launch without flags (`.\scripts\run.bat`), seamlessly falling back to CSV flat-file mode.
