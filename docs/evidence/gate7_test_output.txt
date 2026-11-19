@@ -1,0 +1,147 @@
+============================================
+ RevLine Test
+============================================
+============================================
+ RevLine Build
+============================================
+Compiling sources (Java 17 target)...
+[PASS] Build succeeded with zero warnings.
+Compiling tests (Java 17 target)...
+Running tests...
+=================================================
+ RevLine In-House Automated Test Suite
+=================================================
+--- CORE MODULE CHECKS ---
+  [PASS] SeedConsistencyTest.testSeedMatchesLegacyC          
+  [PASS] SeedConsistencyTest.testLegacySoldCarsPreserved     
+  [PASS] SeedConsistencyTest.testSeedSalesConsistency        
+  [PASS] CarTest.testValidCarCreationAndGetters              
+  [PASS] CarTest.testConstructorValidationInvalidSpeed       
+  [PASS] CarTest.testConstructorValidationInvalidHorsepower  
+  [PASS] CarTest.testConstructorValidationInvalidAcceleration
+  [PASS] CarTest.testConstructorValidationNegativePrice      
+  [PASS] CarTest.testConstructorValidationBlankBrandOrModel  
+  [PASS] CarTest.testCsvSerializationAndDeserializationRoundTrip
+  [PASS] CarTest.testCarDeepCopy                             
+  [PASS] CarTest.testComparableNaturalOrderById              
+  [PASS] CarTest.testStatusTransitions                       
+  [PASS] ValidatorTest.testRequireNonBlank                   
+  [PASS] ValidatorTest.testValidateStringNoDelimiter         
+  [PASS] ValidatorTest.testParsePositiveIntValid             
+  [PASS] ValidatorTest.testParsePositiveIntInvalidThrows     
+  [PASS] ValidatorTest.testValidateTopSpeedBoundary          
+  [PASS] ValidatorTest.testValidateHorsepowerBoundary        
+  [PASS] ValidatorTest.testValidateAccelerationBoundary      
+  [PASS] FileCarRepositoryTest.testFindAllReturnsSeededCount 
+  [PASS] FileCarRepositoryTest.testFindByIdExistingAndNonExisting
+  [PASS] FileCarRepositoryTest.testFindByStatus              
+  [PASS] FileCarRepositoryTest.testFindByPriceRange          
+  [PASS] FileCarRepositoryTest.testNextId                    
+  [PASS] FileCarRepositoryTest.testCrashSafeWriteIntegrity   
+  [PASS] InventoryServiceTest.testFindAllDefensiveCopyImmutability
+  [PASS] InventoryServiceTest.testFindByIdExisting           
+  [PASS] InventoryServiceTest.testFindByIdThrowsWhenNotFound 
+  [PASS] InventoryServiceTest.testAddCarRejectsDuplicate     
+  [PASS] InventoryServiceTest.testCalculateTotalStockValueOnlyAvailable
+  [PASS] InventoryServiceTest.testGetBrandsSortedTreeSet     
+  [PASS] SearchServiceTest.testFindByIdDelegation            
+  [PASS] SearchServiceTest.testFindByStatus                  
+  [PASS] CarComparatorsTest.testByPriceAsc                   
+  [PASS] CarComparatorsTest.testByPriceDesc                  
+  [PASS] CarComparatorsTest.testBySpeedDesc                  
+  [PASS] CarComparatorsTest.testByHpDesc                     
+  [PASS] CarComparatorsTest.testByAccelAsc                   
+  [PASS] CarComparatorsTest.testByBrandModel                 
+  [PASS] FilterBuilderTest.testBrandFilterCaseInsensitive    
+  [PASS] FilterBuilderTest.testFuelTypeFilter                
+  [PASS] FilterBuilderTest.testPriceRangeFilter              
+  [PASS] FilterBuilderTest.testPerformanceFilter             
+  [PASS] FilterBuilderTest.testAvailableOnlyFilter           
+  [PASS] FilterBuilderTest.testComposedFiltersWithAnd        
+  [PASS] FilterBuilderTest.testEmptyFilterMatchesAll         
+  [PASS] ComparisonServiceTest.testCompareTwoCarsGridDimensions
+  [PASS] ComparisonServiceTest.testCompareThreeCarsGridDimensions
+  [PASS] ComparisonServiceTest.testCompareDeterminesCorrectWinners
+  [PASS] ComparisonServiceTest.testCompareRejectsInvalidCounts
+  [PASS] ComparisonServiceTest.testFormatTableRenders        
+  [PASS] RecentlyViewedTest.testLruCapacityEviction          
+  [PASS] RecentlyViewedTest.testAccessOrderRefresh           
+  [PASS] RecentlyViewedTest.testRecentlyViewedListOrder      
+  [PASS] UndoManagerTest.testPushAndPeek                     
+  [PASS] UndoManagerTest.testCapacityEviction                
+  [PASS] UndoManagerTest.testCanUndoAndClear                 
+  [PASS] FileSaleRepositoryTest.testSaveAndFindAll           
+  [PASS] FileSaleRepositoryTest.testFindByIdAndCarId         
+  [PASS] FileSaleRepositoryTest.testNextIdGeneration         
+  [PASS] FileSaleRepositoryTest.testCrashSafeWriteIntegrity  
+  [PASS] ReservationManagerTest.testReserveCar               
+  [PASS] ReservationManagerTest.testCannotDoubleReserve      
+  [PASS] ReservationManagerTest.testCancelReservation        
+  [PASS] ReservationManagerTest.testPurgeExpiredUsesIteratorRemove
+  [PASS] WaitlistServiceTest.testJoinWaitlistPosition        
+  [PASS] WaitlistServiceTest.testPollOrderFifo               
+  [PASS] WaitlistServiceTest.testRemoveAndPosition           
+  [PASS] SalesServiceTest.testSellCarSuccessMovesStatusToSold
+  [PASS] SalesServiceTest.testSellCarFailsIfAlreadySold      
+  [PASS] SalesServiceTest.testSellCarFailsIfReservedByAnother
+  [PASS] SalesServiceTest.testSellCarSucceedsIfReservedBySameBuyer
+  [PASS] SalesServiceTest.testReserveAndCancelIntegration    
+  [PASS] SalesServiceTest.testGenerateReceiptFormat          
+  [PASS] SalesServiceTest.testPurgeExpiredReservationsRevertsStatus
+  [PASS] DatabaseManagerTest.testConnectionAndPragmaForeignKeys
+  [PASS] DatabaseManagerTest.testSchemaInitializerCreatesTablesAndSeeds
+  [PASS] SqlInjectionTest.testPreparedStatementImmunityToSqlInjection
+  [PASS] JdbcSaleRepositoryTest.testSaveAndFindAllJdbc       
+  [PASS] JdbcSaleRepositoryTest.testFindByIdAndFindByCarIdJdbc
+  [PASS] JdbcSaleRepositoryTest.testRecordSaleAtomicCommitAndRollback
+  [PASS] RepositoryContractTest.testCarRepositoryContractInBothModes
+  [PASS] RepositoryContractTest.testSaleRepositoryContractInBothModes
+  [PASS] ReportServiceAllReportsTest.testR1AvailableCars     
+  [PASS] ReportServiceAllReportsTest.testR2AvailableStockValue
+  [PASS] ReportServiceAllReportsTest.testR3TotalPortfolioValue
+  [PASS] ReportServiceAllReportsTest.testR4CarsByFuelType    
+  [PASS] ReportServiceAllReportsTest.testR5Top3FastestCars   
+  [PASS] ReportServiceAllReportsTest.testR6TopNByHorsepower  
+  [PASS] ReportServiceAllReportsTest.testR7AveragePriceByBrand
+  [PASS] ReportServiceAllReportsTest.testR8DistinctBrandsSorted
+  [PASS] ReportServiceAllReportsTest.testR9Pagination        
+  [PASS] ReportServiceAllReportsTest.testR10TotalRevenue     
+  [PASS] ReportServiceAllReportsTest.testR11RevenueByBuyer   
+  [PASS] ReportServiceAllReportsTest.testR12FastestPerFuelType
+  [PASS] ReportServiceAllReportsTest.testR13PriceBandMatrix  
+  [PASS] ReportServiceAllReportsTest.testR14FormattedNamesList
+  [PASS] ReportServiceAllReportsTest.testR15LazinessDemo     
+  [PASS] GenericsAndLambdaTest.testPairContainer             
+  [PASS] GenericsAndLambdaTest.testGenericUtilsMaxOf         
+  [PASS] GenericsAndLambdaTest.testGenericUtilsWildcardAndMap
+  [PASS] GenericsAndLambdaTest.testGenericUtilsPriceLadderTreeMap
+  [PASS] GenericsAndLambdaTest.testLambdaShowcaseStandardInterfaces
+  [PASS] GenericsAndLambdaTest.testLambdaShowcaseFourMethodReferenceKinds
+  [PASS] ConcurrencyStressTest.testSafeCounterIncrementIntegrity
+  [PASS] ConcurrencyStressTest.testAutoSaveThreadInterruption
+  [PASS] ConcurrencyStressTest.testReservationExpiryThreadLifecycle
+  [PASS] ConcurrencyStressTest.testDoubleSellStressTwentyRoundsNoDeadlock
+  [PASS] DataToolsTest.testLegacyCImport                     
+  [PASS] DataToolsTest.testCsvImportWithErrorReport          
+  [PASS] DataToolsTest.testStreamTokenizerScriptImport       
+  [PASS] DataToolsTest.testByteStreamBackupRestoreByteIdentical
+  [PASS] DataToolsTest.testLosslessRoundTripImportExportImport
+  [PASS] DataToolsTest.testSyntheticDataGenerator            
+  [PASS] DataToolsTest.testStorageMigrationCountsMatch       
+
+--- ASSIGNED EXERCISE CHECKS ---
+  [COMPLETE] EX-1 (Part A): Validator.isValidFuelType(String)
+  [COMPLETE] EX-1 (Part B): Validator.parsePositiveDouble(String, String)
+  [COMPLETE] EX-2: CarComparators.byValueForMoney()
+  [COMPLETE] EX-3: SearchService.search(String query)
+  [COMPLETE] EX-4: ReportService.topNByHorsepower(int)
+  [COMPLETE] EX-5: ReportService.averagePriceByBrand()
+  [COMPLETE] EX-6: JdbcCarRepository.findByPriceRange(double, double)
+  [COMPLETE] EX-7: UndoManager.undo(InventoryService)
+  [COMPLETE] EX-8: PurchaseRequestQueue.take()
+=================================================
+ Core Suite : 116/116 Passed (591 ms)
+ Exercises  : 9/9 Completed
+=================================================
+ALL CORE CHECKS PASSED WITH ZERO ERRORS.
+

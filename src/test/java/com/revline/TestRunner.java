@@ -361,6 +361,22 @@ public class TestRunner {
                 ConcurrencyStressTest::testReservationExpiryThreadLifecycle));
         coreTests.add(new TestCase("ConcurrencyStressTest.testDoubleSellStressTwentyRoundsNoDeadlock",
                 ConcurrencyStressTest::testDoubleSellStressTwentyRoundsNoDeadlock));
+
+        // Enterprise Data Tools, File Handling & Lossless Round-Trip (GATE 7) (7 tests)
+        coreTests.add(new TestCase("DataToolsTest.testLegacyCImport",
+                DataToolsTest::testLegacyCImport));
+        coreTests.add(new TestCase("DataToolsTest.testCsvImportWithErrorReport",
+                DataToolsTest::testCsvImportWithErrorReport));
+        coreTests.add(new TestCase("DataToolsTest.testStreamTokenizerScriptImport",
+                DataToolsTest::testStreamTokenizerScriptImport));
+        coreTests.add(new TestCase("DataToolsTest.testByteStreamBackupRestoreByteIdentical",
+                DataToolsTest::testByteStreamBackupRestoreByteIdentical));
+        coreTests.add(new TestCase("DataToolsTest.testLosslessRoundTripImportExportImport",
+                DataToolsTest::testLosslessRoundTripImportExportImport));
+        coreTests.add(new TestCase("DataToolsTest.testSyntheticDataGenerator",
+                DataToolsTest::testSyntheticDataGenerator));
+        coreTests.add(new TestCase("DataToolsTest.testStorageMigrationCountsMatch",
+                DataToolsTest::testStorageMigrationCountsMatch));
     }
 
     private static void registerExerciseChecks() {
