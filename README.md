@@ -98,7 +98,7 @@ This project is developed using a collaborative **pair-programmer and technical 
 ### Student Personal Ownership & Contributions
 To ensure authentic personal contribution and complete viva readiness, the following components are **owned and written personally by the student**:
 1. **Problem Statement & Objectives**: Drafted, scoped, and written directly by the student in `docs/01_PROBLEM_STATEMENT.md` and `docs/02_OBJECTIVES_SCOPE.md`.
-2. **Implementation Exercises (EX-1 to EX-8)**: EX-1, EX-2, EX-3, and EX-7 are implemented and covered by tests. EX-2 and EX-7 were implemented with Codex assistance at the user's direction; see `docs/learning/EX_LOG.md` for attribution. EX-4, EX-5, EX-6, and EX-8 are scheduled for later phases.
+2. **Implementation Exercises (EX-1 to EX-8)**: EX-1 through EX-7 are implemented and covered by checks; EX-8 remains assigned. EX-2, EX-4, EX-5, EX-6, and EX-7 were implemented with Codex assistance at the user's direction; see `docs/learning/EX_LOG.md` for attribution.
 3. **Version Control & Repository Management**: Every Git commit, branch merge, and tag is reviewed and executed manually by the student using honest, chronological timestamps.
 4. **Execution & Evidence Gathering**: Phase gates, live demo rehearsals, and performance/stress runs are executed personally by the student on their local machine.
 5. **Viva Defense**: The student personally defends every architectural choice, design pattern, collection selection, and thread synchronization block in oral examination.
@@ -117,9 +117,9 @@ To ensure authentic personal contribution and complete viva readiness, the follo
 | EX-1 | `Validator.isValidFuelType` + `parsePositiveDouble` | L2, L3 | ✅ Completed by Aryan (commit `7fbdfd3`) |
 | EX-2 | `CarComparators.byValueForMoney()` | L8 | ⏳ Assigned to Aryan (Active in Phase 3) |
 | EX-3 | `SearchService.search(String)` | L2, L5 | ✅ Completed by Aryan (commit `fc2bb19`) |
-| EX-4 | `ReportService.topNByHorsepower(int)` | L21–23 | Student-owned (Phase 5) |
-| EX-5 | `ReportService.averagePriceByBrand()` | L23 | Student-owned (Phase 5) |
-| EX-6 | `JdbcCarRepository.findByPriceRange(double,double)` | L19–20 | Student-owned (Phase 4) |
+| EX-4 | `ReportService.topNByHorsepower(int)` | L21–23 | Implemented; Codex assisted |
+| EX-5 | `ReportService.averagePriceByBrand()` | L23 | Implemented; Codex assisted |
+| EX-6 | `JdbcCarRepository.findByPriceRange(double,double)` | L19–20 | Implemented; Codex assisted |
 | EX-7 | `UndoManager.undo()` | L6–7 | ⏳ Assigned to Aryan (Active in Phase 3) |
 | EX-8 | `PurchaseRequestQueue.take()` | L15–16 | Student-owned (Phase 6) |
 

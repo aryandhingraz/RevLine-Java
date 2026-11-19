@@ -62,7 +62,9 @@
 | Item | Status | Evidence |
 |------|--------|----------|
 | Sorting & Comparators (L8) | ✅ Done | `CarComparators.java` (7 comparators, asc/desc, tie-breakers) |
-| Student Exercise EX-2 | ✅ Done | `CarComparators.byValueForMoney()`, commit `fc78366` |
+| Student Exercise EX-2 | ✅ Done | `CarComparators.byValueForMoney()` (Codex-assisted; see exercise log) |
+| Student Exercises EX-4 & EX-5 | ✅ Done | `ReportService.topNByHorsepower`, `averagePriceByBrand` (Codex-assisted) |
+| Student Exercise EX-6 | ✅ Done | `JdbcCarRepository.findByPriceRange` (Codex-assisted) |
 | Composable Filters (L21) | ✅ Done | `FilterBuilder.java` (Predicate chaining with and()) |
 | Side-by-Side Spec Matrix (L2) | ✅ Done | `ComparisonService.java` (2D String[][] grid, *BEST indicators) |
 | LRU Browsing Cache (L6-7) | ✅ Done | `RecentlyViewed.java` (LinkedHashMap access-order eviction at size > 5) |
@@ -72,9 +74,9 @@
 | FIFO Waitlist (L6-7) | ✅ Done | `WaitlistService.java` (Queue / LinkedList FIFO) |
 | Sales & Atomic State Machine | ✅ Done | `SalesService.java` (synchronized sellCar, rollback guarantee, ASCII receipt) |
 | Stack-Based Undo (L6-7) | ✅ Done | `UndoManager.java` (ArrayDeque LIFO history for ADD/DELETE/UPDATE) |
-| Student Exercise EX-7 | ✅ Done | `UndoManager.undo()`, commit `197baaa` |
+| Student Exercise EX-7 | ✅ Done | `UndoManager.undo()` (Codex-assisted; see exercise log) |
 | Seller / Buyer View Toggle | ✅ Done | `[S]` command in `MenuController.java` |
-| Automated Test Suite | ✅ Done | 76 / 76 core checks passing, 5 / 8 exercises complete |
+| Automated Test Suite | ✅ Done | 76 / 76 core checks passing, 8 / 9 exercise checks complete (EX-8 pending) |
 | Scripted CA-3 Demo Output | ✅ Done | `docs/evidence/demo_ca3_input.txt` -> `docs/evidence/demo_ca3_output.txt` |
 | Explainer & Viva Preparation | ✅ Done | `docs/learning/M2_M3_EXPLAINED.md` (architecture + 5 viva Q&As) |
 | CA-3 Submission Checklist | ✅ Done | `docs/CA3_SUBMISSION_CHECKLIST.md` (Rubric Rows 1–5 green) |
@@ -83,8 +85,8 @@
 
 | Phase | Description | Status |
 |-------|-------------|--------|
-| 4 | JDBC persistence | Pending |
-| 5 | Streams, lambdas, generics | Pending |
+| 4 | JDBC persistence | In progress (EX-6 implemented; repository infrastructure remains) |
+| 5 | Streams, lambdas, generics | In progress (EX-4 and EX-5 implemented; remaining reports are pending) |
 | 6 | Concurrency | Pending |
 | 7 | File handling & data tools | Pending |
 | 8 | Hardening & viva v1.0 | Pending |

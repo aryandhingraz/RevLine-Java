@@ -66,7 +66,7 @@ public class TestRunner {
         }
 
         // 2. Run Student Exercise Checks
-        System.out.println("\n--- STUDENT EXERCISES (Owned by Aryan) ---");
+        System.out.println("\n--- ASSIGNED EXERCISE CHECKS ---");
         int completedExercises = 0;
         for (ExerciseCheck ec : exerciseChecks) {
             try {
@@ -84,7 +84,7 @@ public class TestRunner {
 
         System.out.println("=================================================");
         System.out.printf(" Core Suite : %d/%d Passed (%d ms)\n", passed, coreTests.size(), elapsed);
-        System.out.printf(" Exercises  : %d/8 Completed (Active: EX-1, EX-2, EX-3, EX-7)\n", completedExercises);
+        System.out.printf(" Exercises  : %d/%d Completed\n", completedExercises, exerciseChecks.size());
         System.out.println("=================================================");
 
         if (!coreFailures.isEmpty()) {
@@ -292,7 +292,15 @@ public class TestRunner {
                 CarComparatorsTest::testExercise2_byValueForMoney));
         exerciseChecks.add(new ExerciseCheck("EX-3", "SearchService.search(String query)",
                 SearchServiceTest::testExercise3_searchMultiField));
+        exerciseChecks.add(new ExerciseCheck("EX-4", "ReportService.topNByHorsepower(int)",
+                ReportServiceTest::testExercise4TopNByHorsepower));
+        exerciseChecks.add(new ExerciseCheck("EX-5", "ReportService.averagePriceByBrand()",
+                ReportServiceTest::testExercise5AveragePriceByBrand));
+        exerciseChecks.add(new ExerciseCheck("EX-6", "JdbcCarRepository.findByPriceRange(double, double)",
+                JdbcCarRepositoryTest::testExercise6FindByPriceRange));
         exerciseChecks.add(new ExerciseCheck("EX-7", "UndoManager.undo(InventoryService)",
                 UndoManagerTest::testExercise7_undoOperation));
+        exerciseChecks.add(new ExerciseCheck("EX-8", "PurchaseRequestQueue.take()",
+                () -> { throw new UnsupportedOperationException("Assigned for Phase 6."); }));
     }
 }

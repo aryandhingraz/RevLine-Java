@@ -55,7 +55,7 @@
 
 ### Phase 3: Core Features + CA-3 Package (`v0.3-ca3`)
 - **Module 2: Search, Filter, Sort & Compare**:
-  - `CarComparators.java`: 6 static comparators (`BY_PRICE_ASC`, `BY_PRICE_DESC`, `BY_SPEED_DESC`, `BY_HP_DESC`, `BY_ACCEL_ASC`, `BY_BRAND_MODEL`).
+  - `CarComparators.java`: six named comparators plus the EX-2 value-for-money comparator.
   - `FilterBuilder.java`: composable predicate builder (`brand`, `fuelType`, `minPrice`, `maxPrice`, `minSpeed`, `minHorsepower`, `availableOnly`) chained via `Predicate.and()`.
   - `ComparisonService.java`: 2D `String[][]` matrix comparison table (L2) with `*BEST` winner calculation.
 - **Module 3: Sales, Reservation & Management**:
@@ -71,10 +71,12 @@
   - Seller View: complete inventory overview, car additions, updates, deletions, undo operation, sales ledger, showroom valuation, audit log viewer.
 - **Exercise Implementations**:
   - EX-2 (`CarComparators.byValueForMoney()`): L8 comparator based on HP per $100k with acceleration tie-breaker. Complete in commit `fc78366`.
+  - EX-4 and EX-5 (`ReportService`): top horsepower descriptions and average price grouped by brand.
+  - EX-6 (`JdbcCarRepository.findByPriceRange()`): inclusive range query using a `PreparedStatement`.
   - EX-7 (`UndoManager.undo()`): L6–7 Deque stack undo for ADD, DELETE, UPDATE. Complete in commit `197baaa`.
 - **Automated Tests**:
   - 76 / 76 core checks passing (`TestRunner.java`).
-  - EX-1, EX-2, EX-3, and EX-7 verified [COMPLETE].
+  - 8 / 9 exercise checks complete; EX-8 remains [PENDING].
 - **CA-3 Package**:
   - `docs/CA3_SUBMISSION_CHECKLIST.md`: comprehensive submission readiness across Rubric Rows 1–5 and 8-minute demo walkthrough.
   - `docs/learning/M2_M3_EXPLAINED.md`: technical explainer and viva defense guide for Modules 2 and 3.

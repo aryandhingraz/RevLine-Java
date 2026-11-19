@@ -12,7 +12,7 @@
 
 | Dependency | Version | Source | SHA-256 | Why |
 |------------|---------|--------|---------|-----|
-| `org.xerial:sqlite-jdbc` | *(to be downloaded in Phase 4)* | Maven Central | *(to be verified)* | JDBC persistence for SQLite (the only DB driver needed) |
+| `org.xerial:sqlite-jdbc` | `3.54.1.0` | Maven Central / Xerial release | `f8dce420a6016278497f4f0560f65602b9db858de141b541cf91a4644ebe4639` | JDBC persistence for SQLite (the only DB driver needed) |
 
 **No other jars.** The project compiles and runs in CSV mode without any external dependency.
 
