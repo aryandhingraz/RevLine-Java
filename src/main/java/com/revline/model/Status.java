@@ -31,4 +31,20 @@ public enum Status {
         // SOLD is terminal
         return false;
     }
+
+    /**
+     * Parses a string to Status case-insensitively.
+     */
+    public static Status fromString(String text) {
+        if (text == null || text.trim().isEmpty()) {
+            throw new IllegalArgumentException("Status text cannot be blank.");
+        }
+        String clean = text.trim().toUpperCase();
+        for (Status s : values()) {
+            if (s.name().equals(clean)) {
+                return s;
+            }
+        }
+        throw new IllegalArgumentException("Unknown status: '" + text + "'. Allowed: AVAILABLE, RESERVED, SOLD.");
+    }
 }

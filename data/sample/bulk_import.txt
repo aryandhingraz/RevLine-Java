@@ -1,0 +1,27 @@
+# RevLine Showroom Batch Script Import
+# Demonstrates java.io.StreamTokenizer with quotes, tokens, numbers, and comments (L25)
+
+# 1. Add new flagship supercars
+ADD "Ferrari" "812 Superfast" 340000.00 340 PETROL 789 2.9
+ADD "McLaren" "Artura" 237500.00 330 HYBRID 671 3.0
+ADD "Porsche" "Taycan Turbo S" 185000.00 260 ELECTRIC 750 2.8
+ADD "Rimac" "Nevera" 2400000.00 412 ELECTRIC 1914 1.81
+ADD "Aston Martin" "DBS Superleggera" 316300.00 340 PETROL 715 3.4
+
+# 2. Vehicle sales transactions
+SELL 1 "Vikram Singhania"
+SELL 2 "Kabir Oberoi"
+
+# 3. Client reservation holds (minutes duration)
+RESERVE 5 "Dev Malhotra" 30
+RESERVE 6 "Ananya Sen" 45
+
+# 4. Additional inventory additions
+ADD "Lamborghini" "Revuelto" 608000.00 350 HYBRID 1001 2.5
+ADD "Maserati" "MC20" 212000.00 325 PETROL 621 2.9
+
+# 5. Invalid command to verify syntax error recovery
+INVALID_CMD "Unknown" 999
+
+# 6. Final addition
+ADD "Mercedes-AMG" "GT Black Series" 325000.00 325 PETROL 720 3.2

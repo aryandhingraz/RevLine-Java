@@ -42,7 +42,8 @@ public final class MenuPrinter {
         System.out.println("║  [6] Sales Transaction History & Receipts                          ║");
         System.out.println("║  [7] Advanced Analytics & Reports (R1-R15 Streams & Text Export)   ║");
         System.out.println("║  [8] Concurrency Lab (5 Deterministic Multithreading Demos - L9-16)║");
-        System.out.println("║  [9] View System Audit Log (Recent Operations)                     ║");
+        System.out.println("║  [9] Data Tools (Import, Export, Backup, Restore, Scripts - L25-27)║");
+        System.out.println("║  [A] View System Audit Log (Recent Operations)                     ║");
         System.out.println("║                                                                    ║");
         System.out.println("║  [S] Switch to BUYER / CLIENT VIEW                                 ║");
         System.out.println("║  [0] Exit Application                                              ║");
@@ -106,6 +107,21 @@ public final class MenuPrinter {
         System.out.println("║  [3] Thread Lifecycle & Priority Tracer (getState() - L11, 12)     ║");
         System.out.println("║  [4] Producer-Consumer Bounded Buffer Pipeline (L15, 16)           ║");
         System.out.println("║  [5] Thread Interruption & Memory Visibility (L10, 14)             ║");
+        System.out.println("║  [0] Back to Management Menu                                       ║");
+        System.out.println("╚════════════════════════════════════════════════════════════════════╝");
+    }
+
+    public static void printDataToolsMenu() {
+        System.out.println();
+        System.out.println("╔════════════════════════════════════════════════════════════════════╗");
+        System.out.println("║ REVLINE DATA TOOLS & FILE MANAGEMENT (L25-L27)                     ║");
+        System.out.println("╠════════════════════════════════════════════════════════════════════╣");
+        System.out.println("║  [1] Import Legacy C Flat-File (data/legacy/cars.txt)              ║");
+        System.out.println("║  [2] Batch CSV Import with Error Reporting (data/sample)           ║");
+        System.out.println("║  [3] StreamTokenizer Script Batch Execution (bulk_import.txt)      ║");
+        System.out.println("║  [4] Byte-Stream Full Database Backup (data/backups/cars.bak)      ║");
+        System.out.println("║  [5] Restore Database from Byte-Stream Backup                      ║");
+        System.out.println("║  [6] Generate Synthetic Supercars (Stress / Benchmarking)          ║");
         System.out.println("║  [0] Back to Management Menu                                       ║");
         System.out.println("╚════════════════════════════════════════════════════════════════════╝");
     }

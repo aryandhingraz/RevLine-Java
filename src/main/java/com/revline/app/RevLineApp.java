@@ -10,6 +10,7 @@ import com.revline.repository.JdbcCarRepository;
 import com.revline.repository.JdbcSaleRepository;
 import com.revline.repository.SaleRepository;
 import com.revline.service.ComparisonService;
+import com.revline.service.DataToolsService;
 import com.revline.service.InventoryService;
 import com.revline.service.RecentlyViewed;
 import com.revline.service.ReportService;
@@ -88,6 +89,7 @@ public class RevLineApp {
             ComparisonService comparisonService = new ComparisonService();
             RecentlyViewed recentlyViewed = new RecentlyViewed();
             ReportService reportService = new ReportService(inventoryService, saleRepo);
+            DataToolsService dataToolsService = new DataToolsService(logger);
 
             // Initialize & Launch Background Daemon Threads (Phase 6, L9-L12)
             AutoSaveThread autoSaveThread = new AutoSaveThread(inventoryService, logger);
@@ -124,6 +126,7 @@ public class RevLineApp {
                     comparisonService,
                     recentlyViewed,
                     reportService,
+                    dataToolsService,
                     logger,
                     reader
             );

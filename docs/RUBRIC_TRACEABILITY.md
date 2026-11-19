@@ -83,6 +83,30 @@
   - `docs/evidence/demo_ca3_input.txt` & `docs/evidence/demo_ca3_output.txt`: scripted execution log verifying full end-to-end functionality.
 - **Build Status**: **PASS** (`javac --release 17 -Xlint:all`, 0 warnings, 0 errors).
 
+### Phase 7: File Handling & Enterprise Data Tools (L25–L27) (`v0.7-datatools`)
+- **Legacy C Flat-File Migration (L26–L27)**:
+  - `DataToolsService.importLegacyC`: parses comma-delimited `cars.txt` with status integer translation (`1` -> AVAILABLE, `0` -> SOLD), merges into inventory without collision.
+- **Batch CSV Importer with Multi-Catch & Error Reporting (L3, L26–L27)**:
+  - `DataToolsService.importCsv`: validates line by line, employs multi-catch (`IOException | NumberFormatException | InvalidCarException`), and outputs structured line-by-line audit reports to `data/reports/import_errors_*.txt`.
+- **Command DSL Script Importer via StreamTokenizer (L25)**:
+  - `DataToolsService.importScript`: lexically parses automation batch commands (`ADD`, `SELL`, `RESERVE`), leverages `ttype`, `sval`, `nval`, handles quoted strings, and skips comments (`#`).
+- **Lossless Byte-Stream Backup & Restore (L25)**:
+  - `DataToolsService.backupFile` & `restoreFile`: direct binary 4KB buffer copying via `FileInputStream` and `FileOutputStream`.
+  - `areFilesByteIdentical`: byte-by-byte comparison verifying restored files match original bytes with 100% fidelity.
+- **Lossless Storage Migration (L24 Generics, L17–L20)**:
+  - `DataToolsService.migrate`: cross-migrates catalog entities between generic `CarRepository` implementations (CSV <-> SQLite).
+- **Synthetic Data Generator (L4)**:
+  - `DataToolsService.generateSyntheticCars`: generates 100 or 1,000 spec-valid synthetic supercars for system stress and load testing.
+- **Interactive UI Integration**:
+  - `MenuPrinter.java` & `MenuController.java`: added Data Tools submenu `[9]` in Seller view for on-demand batch operations.
+- **GATE 7 Invariant Verification**:
+  - `DataToolsTest.java`: 7 automated tests verifying import -> export -> import round-trip lossless preservation and byte-identical backup restoration.
+- **Documentation & Viva Guide**:
+  - `docs/learning/M7_EXPLAINED.md`: technical explainer covering character vs byte streams, `StreamTokenizer`, multi-catch, and data recovery.
+- **Automated Tests**:
+  - **116 / 116 core checks passing** (`TestRunner.java`, 600 ms); **9 / 9 exercises complete**.
+- **Build Status**: **PASS** (`javac --release 17 -Xlint:all`, 0 warnings, 0 errors).
+
 ### Phase 6: Multithreading & Concurrency Architecture (L9–L16) (`v0.6-concurrency`)
 - **Background Daemon Threads (L9–L12)**:
   - `AutoSaveThread.java`: low-priority (`MIN_PRIORITY`) daemon thread with 30s interval; executes snapshot persistence via `inventoryService.saveSnapshot()`; cleanly stops on `interrupt()` and `join()`.
@@ -172,6 +196,7 @@
 - **Automated Tests**:
   - **109 / 109 core checks passing** (`TestRunner.java`); 9 / 9 exercise checks complete.
 - **Build Status**: **PASS** (`javac --release 17 -Xlint:all`, 0 warnings, 0 errors).
+
 ### Phase 4: JDBC Persistence (L17–20) (`v0.4-jdbc`)
 - **Relational Persistence Infrastructure**:
   - `DatabaseManager.java`: connection factory loading `org.sqlite.JDBC` driver, enabling `PRAGMA foreign_keys = ON;`.
@@ -283,3 +308,4 @@
 - **Automated Tests**:
   - **109 / 109 core checks passing** (`TestRunner.java`); 9 / 9 exercise checks complete.
 - **Build Status**: **PASS** (`javac --release 17 -Xlint:all`, 0 warnings, 0 errors).
+

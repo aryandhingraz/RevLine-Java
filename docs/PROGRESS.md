@@ -129,11 +129,25 @@
 | Explainer & Viva Preparation | ✅ Done | `docs/learning/M6_EXPLAINED.md` (multithreading, lifecycle, monitors, guarded blocks) |
 | Test Suite Status | ✅ Done | **109 / 109 core checks passing**; 9 / 9 exercise checks complete |
 
+## Phase 7: File Handling & Enterprise Data Tools (L25–L27) (`v0.7-datatools`)
+
+| Item | Status | Evidence |
+|------|--------|----------|
+| Legacy C Flat-File Importer | ✅ Done | `DataToolsService.importLegacyC` (18 cars, status flag 1=AVAILABLE, 0=SOLD) |
+| Batch CSV Importer & Reports | ✅ Done | `DataToolsService.importCsv` (multi-catch, error report `data/reports/import_errors_*.txt`) |
+| StreamTokenizer Script Parser | ✅ Done | `DataToolsService.importScript` (ADD, SELL, RESERVE with quotes/comments/EOLs) |
+| Lossless Byte Backup & Restore| ✅ Done | `DataToolsService.backupFile` & `restoreFile` (4KB buffer, byte-identical contract) |
+| Storage Cross-Migration Tool | ✅ Done | `DataToolsService.migrate` (generic repository migration, verified equal counts) |
+| Synthetic Supercar Generator | ✅ Done | `DataToolsService.generateSyntheticCars` (100 / 1,000 valid test cars with realistic specs) |
+| Data Tools UI Integration | ✅ Done | Seller Menu `[9]` submenu in `MenuController.java` & `MenuPrinter.java` |
+| Gate 7 Invariants Suite | ✅ Done | `DataToolsTest.java` (7 checks: round-trip lossless, byte-identical restore, tokenizer) |
+| Explainer & Viva Preparation | ✅ Done | `docs/learning/M7_EXPLAINED.md` (byte vs char streams, StreamTokenizer, multi-catch) |
+| Automated Test Suite Status | ✅ Done | **116 / 116 core checks passing** (600 ms); **9 / 9 exercises complete** |
+
 ## Upcoming
 
 | Phase | Description | Status |
 |-------|-------------|--------|
-| 7 | File handling & data tools | Pending |
 | 8 | Hardening & viva v1.0 | Pending |
 
 ## Risk Register
