@@ -22,17 +22,13 @@
 ## Detailed Step-by-Step Script
 
 ### Act 0: Clean Build & Test Verification (1:00)
-1. **Clean prior artifacts**:
-   ```powershell
-   .\scripts\clean.bat
-   ```
-   *Say to Examiner*: *"RevLine is built strictly against Java 17 LTS without third-party frameworks. I will first demonstrate a completely clean compile."*
-2. **Compile with zero warnings**:
+1. **Compile from a clean output directory** (the build script clears and recreates `out\main`):
    ```powershell
    .\scripts\build.bat
    ```
    *Point out*: `[PASS] Build succeeded with zero warnings.` using `javac --release 17 -Xlint:all`.
-3. **Execute in-house automated test suite**:
+   *Say to Examiner*: *"RevLine is built strictly against Java 17 LTS without third-party frameworks. The build starts by clearing its compiled output."*
+2. **Execute in-house automated test suite**:
    ```powershell
    .\scripts\test.bat
    ```
