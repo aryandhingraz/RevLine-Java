@@ -286,14 +286,8 @@ public class MenuController {
                 title = "SHOWROOM SORTED: BRAND & MODEL (ALPHABETICAL)";
                 break;
             case 7:
-                try {
-                    comp = CarComparators.byValueForMoney();
-                    title = "SHOWROOM SORTED: VALUE FOR MONEY [EX-2]";
-                } catch (UnsupportedOperationException e) {
-                    System.out.println("\n  [!] EX-2 is pending student implementation: " + e.getMessage());
-                    System.out.println("      See docs/learning/EX2_HINT.md for instructions.\n");
-                    return;
-                }
+                comp = CarComparators.byValueForMoney();
+                title = "SHOWROOM SORTED: VALUE FOR MONEY [EX-2]";
                 break;
             default:
                 return;
@@ -536,9 +530,6 @@ public class MenuController {
         try {
             String message = inventoryService.getUndoManager().undo(inventoryService);
             System.out.println("\n  [✓] " + message);
-        } catch (UnsupportedOperationException e) {
-            System.out.println("\n  [!] EX-7 is pending student implementation: " + e.getMessage());
-            System.out.println("      See docs/learning/EX7_HINT.md for instructions.\n");
         } catch (RevLineException e) {
             System.out.println("\n  [!] Undo failed: " + e.getMessage());
         }
