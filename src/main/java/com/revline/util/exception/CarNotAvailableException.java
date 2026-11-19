@@ -11,4 +11,12 @@ public class CarNotAvailableException extends RevLineException {
     public CarNotAvailableException(String message) {
         super(message);
     }
+
+    public CarNotAvailableException(int carId, String reason) {
+        super("Car #" + carId + " is not available: " + reason);
+    }
+
+    public CarNotAvailableException(int carId) {
+        super("Car #" + carId + " is currently not available.");
+    }
 }
