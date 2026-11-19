@@ -195,17 +195,7 @@ public class ReportService {
     }
 
     public String formatPriceBandMatrix() {
-        int[][] matrix = getPriceBandMatrix();
-        StringBuilder sb = new StringBuilder();
-        sb.append(String.format("%-12s | %-12s | %-14s | %-14s | %-10s%n",
-                "Fuel Type", PRICE_BAND_LABELS[0], PRICE_BAND_LABELS[1], PRICE_BAND_LABELS[2], PRICE_BAND_LABELS[3]));
-        sb.append("-------------+--------------+----------------+----------------+-----------").append(System.lineSeparator());
-        for (FuelType ft : FuelType.values()) {
-            int row = ft.ordinal();
-            sb.append(String.format("%-12s | %-12d | %-14d | %-14d | %-10d%n",
-                    ft.label(), matrix[row][0], matrix[row][1], matrix[row][2], matrix[row][3]));
-        }
-        return sb.toString();
+        return ReportSummaryFormatter.formatPriceBandMatrix(getPriceBandMatrix());
     }
 
     // =========================================================================
@@ -238,81 +228,7 @@ public class ReportService {
     // Executive Summary Builder
     // =========================================================================
     public String generateAllReportsSummary() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("==========================================================================").append(System.lineSeparator());
-        sb.append("                 REVLINE SHOWROOM EXECUTIVE ANALYTICS REPORT              ").append(System.lineSeparator());
-        sb.append("==========================================================================").append(System.lineSeparator());
-
-        sb.append(String.format("[R1]  Available Vehicles        : %d%n", getAvailableCars().size()));
-        sb.append(String.format("[R2]  Stock Value (Available)  : $%,.2f%n", calculateAvailableStockValue()));
-        sb.append(String.format("[R3]  Total Portfolio Value    : $%,.2f%n", calculateTotalPortfolioValue()));
-
-        sb.append("[R4]  Vehicles Per Fuel Type    : ");
-        Map<FuelType, Long> fuelCounts = countCarsByFuelType();
-        sb.append(String.format("PETROL: %d | HYBRID: %d | ELECTRIC: %d%n",
-                fuelCounts.get(FuelType.PETROL), fuelCounts.get(FuelType.HYBRID), fuelCounts.get(FuelType.ELECTRIC)));
-
-        sb.append("[R5]  Top-3 Fastest Vehicles    :").append(System.lineSeparator());
-        List<Car> top3 = getTop3FastestCars();
-        for (int i = 0; i < top3.size(); i++) {
-            Car c = top3.get(i);
-            sb.append(String.format("      %d. %s %s - %d km/h ($%,.2f)%n", i + 1, c.getBrand(), c.getModel(), c.getTopSpeed(), c.getPrice()));
-        }
-
-        sb.append("[R6]  Top-3 By Horsepower (EX-4):").append(System.lineSeparator());
-        List<String> topHp = topNByHorsepower(3);
-        for (int i = 0; i < topHp.size(); i++) {
-            sb.append(String.format("      %d. %s%n", i + 1, topHp.get(i)));
-        }
-
-        sb.append("[R7]  Average Price By Brand    :").append(System.lineSeparator());
-        Map<String, Double> brandAvgs = averagePriceByBrand();
-        for (Map.Entry<String, Double> entry : brandAvgs.entrySet()) {
-            sb.append(String.format("      - %-15s : $%,.2f%n", entry.getKey(), entry.getValue()));
-        }
-
-        sb.append(String.format("[R8]  Distinct Brands (%d)       : %s%n",
-                getDistinctBrandsSorted().size(), String.join(", ", getDistinctBrandsSorted())));
-
-        sb.append("[R9]  Inventory Page 1 (size 5) :").append(System.lineSeparator());
-        List<Car> page1 = getCarsPaged(1, 5);
-        for (Car c : page1) {
-            sb.append(String.format("      #%d %s %s ($%,.2f)%n", c.getId(), c.getBrand(), c.getModel(), c.getPrice()));
-        }
-
-        sb.append(String.format("[R10] Total Realized Revenue    : $%,.2f%n", calculateTotalRevenue()));
-
-        sb.append("[R11] Revenue By Buyer          :").append(System.lineSeparator());
-        Map<String, Double> buyerRev = getRevenueByBuyer();
-        if (buyerRev.isEmpty()) {
-            sb.append("      (No sales transactions recorded)%n");
-        } else {
-            for (Map.Entry<String, Double> entry : buyerRev.entrySet()) {
-                sb.append(String.format("      - %-15s : $%,.2f%n", entry.getKey(), entry.getValue()));
-            }
-        }
-
-        sb.append("[R12] Fastest 0-100 By Fuel Type:").append(System.lineSeparator());
-        Map<FuelType, Optional<Car>> fastestPerFuel = getFastestPerFuelType();
-        for (Map.Entry<FuelType, Optional<Car>> entry : fastestPerFuel.entrySet()) {
-            String details = entry.getValue()
-                    .map(c -> String.format("%s %s (%.2f s)", c.getBrand(), c.getModel(), c.getAcceleration()))
-                    .orElse("None");
-            sb.append(String.format("      - %-10s : %s%n", entry.getKey().label(), details));
-        }
-
-        sb.append("[R13] Price Band Distribution   :").append(System.lineSeparator());
-        sb.append(formatPriceBandMatrix());
-
-        sb.append("[R14] Showroom Lineup Names     :").append(System.lineSeparator());
-        sb.append("      ").append(getFormattedVehicleNames()).append(System.lineSeparator());
-
-        Pair<Integer, Integer> laziness = demonstrateLaziness(3);
-        sb.append(String.format("[R15] Stream Laziness Demo      : Unconsumed peek count = %d, Short-circuit count (limit 3) = %d%n",
-                laziness.getFirst(), laziness.getSecond()));
-
-        sb.append("==========================================================================").append(System.lineSeparator());
-        return sb.toString();
+        return ReportSummaryFormatter.generateSummary(this);
     }
 
     private List<Sale> getSales() {
@@ -323,29 +239,6 @@ public class ReportService {
             return saleRepository.findAll();
         } catch (RepositoryException e) {
             return Collections.emptyList();
-        }
-    }
-
-    public static void main(String[] args) {
-        try {
-            com.revline.repository.FileCarRepository carRepo =
-                    new com.revline.repository.FileCarRepository(new java.io.File("data/seed/cars.csv"));
-            com.revline.repository.FileSaleRepository saleRepo =
-                    new com.revline.repository.FileSaleRepository(new java.io.File("data/seed/sales.csv"));
-            InventoryService inv = new InventoryService(carRepo, null);
-            ReportService service = new ReportService(inv, saleRepo);
-            String summary = service.generateAllReportsSummary();
-            System.out.print(summary);
-
-            java.io.File exportDir = new java.io.File("data/exports");
-            if (!exportDir.exists()) {
-                exportDir.mkdirs();
-            }
-            java.io.File exportFile = new java.io.File(exportDir, "report_summary.txt");
-            com.revline.util.FileUtil.safeWrite(exportFile, java.util.Arrays.asList(summary.split("\r?\n")));
-            System.out.println("  [OK] Report successfully written to " + exportFile.getPath());
-        } catch (Exception e) {
-            System.err.println("Failed to run ReportService: " + e.getMessage());
         }
     }
 }
