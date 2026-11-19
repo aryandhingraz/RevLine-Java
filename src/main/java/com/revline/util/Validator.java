@@ -86,9 +86,14 @@ public final class Validator {
      * @see docs/learning/EX1_HINT.md
      */
     public static boolean isValidFuelType(String text) {
-        // --- STUDENT EXERCISE EX-1 (Part A) ---
-        // Aryan will write this implementation.
-        throw new UnsupportedOperationException("Student exercise EX-1");
+        if (text == null || text.trim().isEmpty()) {
+            return false;
+        }
+
+        String fuelType = text.trim();
+        return fuelType.equalsIgnoreCase("PETROL")
+                || fuelType.equalsIgnoreCase("HYBRID")
+                || fuelType.equalsIgnoreCase("ELECTRIC");
     }
 
     /**
@@ -102,8 +107,15 @@ public final class Validator {
      * @see docs/learning/EX1_HINT.md
      */
     public static double parsePositiveDouble(String text, String fieldName) {
-        // --- STUDENT EXERCISE EX-1 (Part B) ---
-        // Aryan will write this implementation.
-        throw new UnsupportedOperationException("Student exercise EX-1");
+        requireNonBlank(text, fieldName);
+        try {
+            double value = Double.parseDouble(text.trim());
+            if (value <= 0.0) {
+                throw new InvalidCarException(fieldName + " must be strictly positive.");
+            }
+            return value;
+        } catch (NumberFormatException e) {
+            throw new InvalidCarException(fieldName + " must be a valid number, got: '" + text + "'.", e);
+        }
     }
 }
