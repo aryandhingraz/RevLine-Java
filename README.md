@@ -19,10 +19,10 @@ A layered, console-driven backend application that manages a supercar showroom �
 | 1 | Inventory CRUD (add / update / delete / view / browse) | ✅ Implemented (L5, L6-7) |
 | 2 | Search (by ID / multi-field text) | ✅ Implemented (EX-3 complete) |
 | 3 | Filter (brand / fuel / budget / speed / status, composable) | ✅ Implemented (`FilterBuilder` L21) |
-| 4 | Sort (6 comparators, asc/desc) | ✅ Implemented (`CarComparators` L8, EX-2 assigned) |
+| 4 | Sort (7 comparators, asc/desc) | ✅ Implemented (`CarComparators` L8, EX-2 complete) |
 | 5 | Compare 2–4 cars side by side (2D matrix) | ✅ Implemented (`ComparisonService` L2) |
 | 6 | Reserve (timed hold) + Buy with receipt | ✅ Implemented (`SalesService` L13-14) |
-| 7 | Waitlist + Undo (Stack/Queue) + LRU Recently Viewed | ✅ Implemented (`UndoManager` L6-7, EX-7 assigned) |
+| 7 | Waitlist + Undo (Stack/Queue) + LRU Recently Viewed | ✅ Implemented (`UndoManager` L6-7, EX-7 complete) |
 | 8 | Stream analytics (15 reports) | Pending (Phase 5) |
 | 9 | Dual persistence (CSV + JDBC/SQLite) | CSV Complete / JDBC Pending (Phase 4) |
 | 10 | Import (legacy C / CSV / command script) + Export + Backup | Pending (Phase 7) |
@@ -98,7 +98,7 @@ This project is developed using a collaborative **pair-programmer and technical 
 ### Student Personal Ownership & Contributions
 To ensure authentic personal contribution and complete viva readiness, the following components are **owned and written personally by the student**:
 1. **Problem Statement & Objectives**: Drafted, scoped, and written directly by the student in `docs/01_PROBLEM_STATEMENT.md` and `docs/02_OBJECTIVES_SCOPE.md`.
-2. **Student Implementation Exercises (EX-1 to EX-8)**: Eight core algorithmic and design methods across validation, comparators, search, streams, JDBC, undo stacks, and concurrency monitor blocks are authored solely by the student. The AI assistant provides only test contracts and method signatures.
+2. **Implementation Exercises (EX-1 to EX-8)**: EX-1, EX-2, EX-3, and EX-7 are implemented and covered by tests. EX-2 and EX-7 were implemented with Codex assistance at the user's direction; see `docs/learning/EX_LOG.md` for attribution. EX-4, EX-5, EX-6, and EX-8 are scheduled for later phases.
 3. **Version Control & Repository Management**: Every Git commit, branch merge, and tag is reviewed and executed manually by the student using honest, chronological timestamps.
 4. **Execution & Evidence Gathering**: Phase gates, live demo rehearsals, and performance/stress runs are executed personally by the student on their local machine.
 5. **Viva Defense**: The student personally defends every architectural choice, design pattern, collection selection, and thread synchronization block in oral examination.

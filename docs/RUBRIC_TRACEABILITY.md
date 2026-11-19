@@ -69,12 +69,12 @@
   - `MenuController.java`: `[S]` command toggles between **Buyer View** and **Seller View**.
   - Buyer View: bidirectional browsing via `ListIterator<Car>`, multi-field search, composable filtering, custom sorting, side-by-side spec comparison, reservation, purchasing, waitlist, recently viewed.
   - Seller View: complete inventory overview, car additions, updates, deletions, undo operation, sales ledger, showroom valuation, audit log viewer.
-- **Student Exercises Assigned**:
-  - EX-2 (`CarComparators.byValueForMoney()`): L8 custom comparator based on HP per $100k with acceleration tie-breaker. Stubbed with failing test & hint `docs/learning/EX2_HINT.md`.
-  - EX-7 (`UndoManager.undo()`): L6–7 Deque stack undo for ADD, DELETE, UPDATE. Stubbed with failing test & hint `docs/learning/EX7_HINT.md`.
+- **Exercise Implementations**:
+  - EX-2 (`CarComparators.byValueForMoney()`): L8 comparator based on HP per $100k with acceleration tie-breaker. Complete in commit `fc78366`.
+  - EX-7 (`UndoManager.undo()`): L6–7 Deque stack undo for ADD, DELETE, UPDATE. Complete in commit `197baaa`.
 - **Automated Tests**:
-  - 76 / 76 core checks passing (`TestRunner.java`, 127 ms).
-  - EX-1 and EX-3 verified [COMPLETE]; EX-2 and EX-7 tracked as [PENDING].
+  - 76 / 76 core checks passing (`TestRunner.java`).
+  - EX-1, EX-2, EX-3, and EX-7 verified [COMPLETE].
 - **CA-3 Package**:
   - `docs/CA3_SUBMISSION_CHECKLIST.md`: comprehensive submission readiness across Rubric Rows 1–5 and 8-minute demo walkthrough.
   - `docs/learning/M2_M3_EXPLAINED.md`: technical explainer and viva defense guide for Modules 2 and 3.
