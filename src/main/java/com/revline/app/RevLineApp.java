@@ -1,8 +1,15 @@
 package com.revline.app;
 
 import com.revline.repository.FileCarRepository;
+import com.revline.repository.FileSaleRepository;
+import com.revline.service.ComparisonService;
 import com.revline.service.InventoryService;
+import com.revline.service.RecentlyViewed;
+import com.revline.service.ReservationManager;
+import com.revline.service.SalesService;
 import com.revline.service.SearchService;
+import com.revline.service.UndoManager;
+import com.revline.service.WaitlistService;
 import com.revline.ui.Banner;
 import com.revline.ui.InputReader;
 import com.revline.util.AppLogger;
@@ -31,22 +38,37 @@ public class RevLineApp {
             // Step 1: Storage verification & default seed injection
             StorageBootstrap.BootInfo boot = StorageBootstrap.init();
 
-            // Step 2: Initialize Core Logger & Repository
+            // Step 2: Initialize Core Logger & Repositories
             AppLogger logger = AppLogger.getInstance();
-            FileCarRepository carRepo = new FileCarRepository(boot.dataFile);
+            FileCarRepository carRepo = new FileCarRepository(boot.carsFile);
+            FileSaleRepository saleRepo = new FileSaleRepository(boot.salesFile);
 
-            // Step 3: Initialize Domain Services
-            InventoryService inventoryService = new InventoryService(carRepo, logger);
+            // Step 3: Initialize Domain Services & Utilities
+            UndoManager undoManager = new UndoManager();
+            InventoryService inventoryService = new InventoryService(carRepo, undoManager, logger);
             SearchService searchService = new SearchService(inventoryService);
+            ReservationManager reservationManager = new ReservationManager();
+            WaitlistService waitlistService = new WaitlistService();
+            SalesService salesService = new SalesService(inventoryService, saleRepo, reservationManager, waitlistService, logger);
+            ComparisonService comparisonService = new ComparisonService();
+            RecentlyViewed recentlyViewed = new RecentlyViewed();
 
             // Step 4: Display C-style System Boot Panel & Brand Logo
-            Banner.printBootPanel("CSV Flat-File (FileCarRepository)", boot.dataFile.getPath(),
-                    boot.wasSeeded, inventoryService.count());
+            Banner.printBootPanel("CSV Flat-File (FileCarRepository & FileSaleRepository)",
+                    boot.carsFile.getPath(), boot.wasCarsSeeded, inventoryService.count());
             Banner.printLogo();
 
             // Step 5: Start Interactive Controller
             InputReader reader = new InputReader();
-            MenuController controller = new MenuController(inventoryService, searchService, reader);
+            MenuController controller = new MenuController(
+                    inventoryService,
+                    searchService,
+                    salesService,
+                    comparisonService,
+                    recentlyViewed,
+                    logger,
+                    reader
+            );
             controller.run();
 
         } catch (RepositoryException e) {

@@ -20,6 +20,21 @@ public class InputReader {
     }
 
     /**
+     * Reads a command string from the user, preserving single letter or numeric choices.
+     */
+    public String readCommand(String prompt) {
+        System.out.print(prompt);
+        try {
+            if (!scanner.hasNextLine()) {
+                return "0";
+            }
+            return scanner.nextLine().trim();
+        } catch (NoSuchElementException e) {
+            return "0";
+        }
+    }
+
+    /**
      * Reads a non-blank line of text from the user.
      */
     public String readLine(String prompt) {

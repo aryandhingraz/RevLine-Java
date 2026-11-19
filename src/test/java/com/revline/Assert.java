@@ -51,6 +51,12 @@ public final class Assert {
         }
     }
 
+    public static void assertNull(Object obj, String message) {
+        if (obj != null) {
+            fail(message + " (expected null object but was " + obj + ")");
+        }
+    }
+
     public static void assertThrows(Class<? extends Throwable> expectedException, Executable executable, String message) {
         try {
             executable.execute();

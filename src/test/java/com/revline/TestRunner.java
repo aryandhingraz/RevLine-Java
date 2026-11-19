@@ -58,10 +58,10 @@ public class TestRunner {
             try {
                 tc.runnable.run();
                 passed++;
-                System.out.printf("  [PASS] %-48s\n", tc.name);
+                System.out.printf("  [PASS] %-52s\n", tc.name);
             } catch (Throwable t) {
                 coreFailures.add(tc.name + " -> " + t.getMessage());
-                System.out.printf("  [FAIL] %-48s\n", tc.name);
+                System.out.printf("  [FAIL] %-52s\n", tc.name);
             }
         }
 
@@ -84,7 +84,7 @@ public class TestRunner {
 
         System.out.println("=================================================");
         System.out.printf(" Core Suite : %d/%d Passed (%d ms)\n", passed, coreTests.size(), elapsed);
-        System.out.printf(" Exercises  : %d/8 Completed (Active: EX-1, EX-3)\n", completedExercises);
+        System.out.printf(" Exercises  : %d/8 Completed (Active: EX-1, EX-2, EX-3, EX-7)\n", completedExercises);
         System.out.println("=================================================");
 
         if (!coreFailures.isEmpty()) {
@@ -179,6 +179,108 @@ public class TestRunner {
                 SearchServiceTest::testFindByIdDelegation));
         coreTests.add(new TestCase("SearchServiceTest.testFindByStatus",
                 SearchServiceTest::testFindByStatus));
+
+        // Car Comparators (6 tests)
+        coreTests.add(new TestCase("CarComparatorsTest.testByPriceAsc",
+                CarComparatorsTest::testByPriceAsc));
+        coreTests.add(new TestCase("CarComparatorsTest.testByPriceDesc",
+                CarComparatorsTest::testByPriceDesc));
+        coreTests.add(new TestCase("CarComparatorsTest.testBySpeedDesc",
+                CarComparatorsTest::testBySpeedDesc));
+        coreTests.add(new TestCase("CarComparatorsTest.testByHpDesc",
+                CarComparatorsTest::testByHpDesc));
+        coreTests.add(new TestCase("CarComparatorsTest.testByAccelAsc",
+                CarComparatorsTest::testByAccelAsc));
+        coreTests.add(new TestCase("CarComparatorsTest.testByBrandModel",
+                CarComparatorsTest::testByBrandModel));
+
+        // Filter Builder (7 tests)
+        coreTests.add(new TestCase("FilterBuilderTest.testBrandFilterCaseInsensitive",
+                FilterBuilderTest::testBrandFilterCaseInsensitive));
+        coreTests.add(new TestCase("FilterBuilderTest.testFuelTypeFilter",
+                FilterBuilderTest::testFuelTypeFilter));
+        coreTests.add(new TestCase("FilterBuilderTest.testPriceRangeFilter",
+                FilterBuilderTest::testPriceRangeFilter));
+        coreTests.add(new TestCase("FilterBuilderTest.testPerformanceFilter",
+                FilterBuilderTest::testPerformanceFilter));
+        coreTests.add(new TestCase("FilterBuilderTest.testAvailableOnlyFilter",
+                FilterBuilderTest::testAvailableOnlyFilter));
+        coreTests.add(new TestCase("FilterBuilderTest.testComposedFiltersWithAnd",
+                FilterBuilderTest::testComposedFiltersWithAnd));
+        coreTests.add(new TestCase("FilterBuilderTest.testEmptyFilterMatchesAll",
+                FilterBuilderTest::testEmptyFilterMatchesAll));
+
+        // Comparison Service (5 tests)
+        coreTests.add(new TestCase("ComparisonServiceTest.testCompareTwoCarsGridDimensions",
+                ComparisonServiceTest::testCompareTwoCarsGridDimensions));
+        coreTests.add(new TestCase("ComparisonServiceTest.testCompareThreeCarsGridDimensions",
+                ComparisonServiceTest::testCompareThreeCarsGridDimensions));
+        coreTests.add(new TestCase("ComparisonServiceTest.testCompareDeterminesCorrectWinners",
+                ComparisonServiceTest::testCompareDeterminesCorrectWinners));
+        coreTests.add(new TestCase("ComparisonServiceTest.testCompareRejectsInvalidCounts",
+                ComparisonServiceTest::testCompareRejectsInvalidCounts));
+        coreTests.add(new TestCase("ComparisonServiceTest.testFormatTableRenders",
+                ComparisonServiceTest::testFormatTableRenders));
+
+        // Recently Viewed (3 tests)
+        coreTests.add(new TestCase("RecentlyViewedTest.testLruCapacityEviction",
+                RecentlyViewedTest::testLruCapacityEviction));
+        coreTests.add(new TestCase("RecentlyViewedTest.testAccessOrderRefresh",
+                RecentlyViewedTest::testAccessOrderRefresh));
+        coreTests.add(new TestCase("RecentlyViewedTest.testRecentlyViewedListOrder",
+                RecentlyViewedTest::testRecentlyViewedListOrder));
+
+        // Undo Manager (3 tests)
+        coreTests.add(new TestCase("UndoManagerTest.testPushAndPeek",
+                UndoManagerTest::testPushAndPeek));
+        coreTests.add(new TestCase("UndoManagerTest.testCapacityEviction",
+                UndoManagerTest::testCapacityEviction));
+        coreTests.add(new TestCase("UndoManagerTest.testCanUndoAndClear",
+                UndoManagerTest::testCanUndoAndClear));
+
+        // File Sale Repository (4 tests)
+        coreTests.add(new TestCase("FileSaleRepositoryTest.testSaveAndFindAll",
+                FileSaleRepositoryTest::testSaveAndFindAll));
+        coreTests.add(new TestCase("FileSaleRepositoryTest.testFindByIdAndCarId",
+                FileSaleRepositoryTest::testFindByIdAndCarId));
+        coreTests.add(new TestCase("FileSaleRepositoryTest.testNextIdGeneration",
+                FileSaleRepositoryTest::testNextIdGeneration));
+        coreTests.add(new TestCase("FileSaleRepositoryTest.testCrashSafeWriteIntegrity",
+                FileSaleRepositoryTest::testCrashSafeWriteIntegrity));
+
+        // Reservation Manager (4 tests)
+        coreTests.add(new TestCase("ReservationManagerTest.testReserveCar",
+                ReservationManagerTest::testReserveCar));
+        coreTests.add(new TestCase("ReservationManagerTest.testCannotDoubleReserve",
+                ReservationManagerTest::testCannotDoubleReserve));
+        coreTests.add(new TestCase("ReservationManagerTest.testCancelReservation",
+                ReservationManagerTest::testCancelReservation));
+        coreTests.add(new TestCase("ReservationManagerTest.testPurgeExpiredUsesIteratorRemove",
+                ReservationManagerTest::testPurgeExpiredUsesIteratorRemove));
+
+        // Waitlist Service (3 tests)
+        coreTests.add(new TestCase("WaitlistServiceTest.testJoinWaitlistPosition",
+                WaitlistServiceTest::testJoinWaitlistPosition));
+        coreTests.add(new TestCase("WaitlistServiceTest.testPollOrderFifo",
+                WaitlistServiceTest::testPollOrderFifo));
+        coreTests.add(new TestCase("WaitlistServiceTest.testRemoveAndPosition",
+                WaitlistServiceTest::testRemoveAndPosition));
+
+        // Sales Service (7 tests)
+        coreTests.add(new TestCase("SalesServiceTest.testSellCarSuccessMovesStatusToSold",
+                SalesServiceTest::testSellCarSuccessMovesStatusToSold));
+        coreTests.add(new TestCase("SalesServiceTest.testSellCarFailsIfAlreadySold",
+                SalesServiceTest::testSellCarFailsIfAlreadySold));
+        coreTests.add(new TestCase("SalesServiceTest.testSellCarFailsIfReservedByAnother",
+                SalesServiceTest::testSellCarFailsIfReservedByAnother));
+        coreTests.add(new TestCase("SalesServiceTest.testSellCarSucceedsIfReservedBySameBuyer",
+                SalesServiceTest::testSellCarSucceedsIfReservedBySameBuyer));
+        coreTests.add(new TestCase("SalesServiceTest.testReserveAndCancelIntegration",
+                SalesServiceTest::testReserveAndCancelIntegration));
+        coreTests.add(new TestCase("SalesServiceTest.testGenerateReceiptFormat",
+                SalesServiceTest::testGenerateReceiptFormat));
+        coreTests.add(new TestCase("SalesServiceTest.testPurgeExpiredReservationsRevertsStatus",
+                SalesServiceTest::testPurgeExpiredReservationsRevertsStatus));
     }
 
     private static void registerExerciseChecks() {
@@ -186,7 +288,11 @@ public class TestRunner {
                 ValidatorTest::testExercise1_isValidFuelType));
         exerciseChecks.add(new ExerciseCheck("EX-1 (Part B)", "Validator.parsePositiveDouble(String, String)",
                 ValidatorTest::testExercise1_parsePositiveDouble));
+        exerciseChecks.add(new ExerciseCheck("EX-2", "CarComparators.byValueForMoney()",
+                CarComparatorsTest::testExercise2_byValueForMoney));
         exerciseChecks.add(new ExerciseCheck("EX-3", "SearchService.search(String query)",
                 SearchServiceTest::testExercise3_searchMultiField));
+        exerciseChecks.add(new ExerciseCheck("EX-7", "UndoManager.undo(InventoryService)",
+                UndoManagerTest::testExercise7_undoOperation));
     }
 }
