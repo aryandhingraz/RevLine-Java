@@ -1,12 +1,22 @@
 package com.revline.app;
 
+import com.revline.model.Car;
+import com.revline.model.Sale;
+import com.revline.repository.DatabaseManager;
+import com.revline.repository.FileCarRepository;
+import com.revline.repository.FileSaleRepository;
+import com.revline.repository.JdbcCarRepository;
+import com.revline.repository.JdbcSaleRepository;
+import com.revline.repository.SchemaInitializer;
 import com.revline.util.FileUtil;
 import com.revline.util.exception.RepositoryException;
 
 import java.io.File;
+import java.sql.Connection;
+import java.util.List;
 
 /**
- * Ensures required storage directories and seed data exist on startup.
+ * Ensures required storage directories, flat-files, and SQLite relational database exist on startup (L17-L20, L26-L27).
  */
 public final class StorageBootstrap {
 
@@ -33,7 +43,7 @@ public final class StorageBootstrap {
     }
 
     /**
-     * Verifies presence of runtime database files; copies seed data if missing.
+     * Verifies presence of runtime CSV database files; copies seed data if missing.
      */
     public static BootInfo init() throws RepositoryException {
         File carsFile = new File(RUNTIME_CARS_PATH);
@@ -65,5 +75,33 @@ public final class StorageBootstrap {
         }
 
         return new BootInfo(carsSeeded, salesSeeded, carsFile, salesFile);
+    }
+
+    /**
+     * Initializes the SQLite relational database schema and auto-seeds initial records.
+     *
+     * @return active initialized database connection
+     * @throws RepositoryException if initialization fails
+     */
+    public static Connection initDatabase() throws RepositoryException {
+        Connection conn = DatabaseManager.getConnection();
+        SchemaInitializer.init(conn);
+        return conn;
+    }
+
+    /**
+     * Migrates records from CSV flat-files into the SQLite relational database (L17-20).
+     */
+    public static int migrateCsvToJdbc(FileCarRepository csvCarRepo,
+                                       FileSaleRepository csvSaleRepo,
+                                       JdbcCarRepository jdbcCarRepo,
+                                       JdbcSaleRepository jdbcSaleRepo) throws RepositoryException {
+        List<Car> csvCars = csvCarRepo.findAll();
+        jdbcCarRepo.saveAll(csvCars);
+
+        List<Sale> csvSales = csvSaleRepo.findAll();
+        jdbcSaleRepo.saveAll(csvSales);
+
+        return csvCars.size() + csvSales.size();
     }
 }

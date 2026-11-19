@@ -95,8 +95,13 @@ public class SalesService {
 
             // Atomic state transition with rollback guarantee
             try {
-                inventoryService.updateCarStatus(carId, Status.SOLD);
-                saleRepository.save(sale);
+                if (saleRepository instanceof com.revline.repository.JdbcSaleRepository) {
+                    ((com.revline.repository.JdbcSaleRepository) saleRepository).recordSaleAtomic(sale, car);
+                    inventoryService.updateCarStatus(carId, Status.SOLD);
+                } else {
+                    inventoryService.updateCarStatus(carId, Status.SOLD);
+                    saleRepository.save(sale);
+                }
             } catch (RepositoryException e) {
                 // Rollback in-memory status
                 try {
