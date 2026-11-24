@@ -1,39 +1,51 @@
-# RevLine
+# RevLine — Car Showroom Management System
 
-### Car Showroom Management System — Java 17
+<p align="center">
+  <img src="docs/assets/revline-banner.svg" alt="RevLine — Java 17 Car Showroom Management System" width="100%" />
+</p>
 
-[![Java build](https://github.com/aryandhingraz/RevLine-Java/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/aryandhingraz/RevLine-Java/actions/workflows/build.yml)
-[![Java](https://img.shields.io/badge/Java-17%2B-orange)](https://www.oracle.com/java/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+<p align="center"><strong>Drive Passion. Live RevLine.</strong><br />A Java 17 console application for showroom inventory, reservations, sales, and analytics.</p>
+
+<p align="center">
+  <a href="https://github.com/aryandhingraz/RevLine-Java/actions/workflows/build.yml"><img src="https://github.com/aryandhingraz/RevLine-Java/actions/workflows/build.yml/badge.svg?branch=main" alt="Java build status" /></a>
+  <a href="https://www.oracle.com/java/"><img src="https://img.shields.io/badge/Java-17%2B-orange" alt="Java 17 or newer" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="MIT License" /></a>
+</p>
+
+<p align="center"><a href="#capabilities">Capabilities</a> · <a href="#engineering-highlights">Engineering</a> · <a href="#architecture">Architecture</a> · <a href="#build-and-run">Quick start</a> · <a href="#project-documentation">Documentation</a></p>
 
 RevLine is a menu-driven Java application for managing the core workflows of a single car showroom. It brings inventory, buyer browsing, reservations, sales, reporting, and data utilities together in one terminal-based system. The application supports CSV persistence and SQLite persistence through JDBC.
 
 The project was developed for **25CSE0202 — Programming in Java**. It is designed to demonstrate how core Java concepts can be combined into a layered application with domain models, service logic, interchangeable repositories, and a console interface.
 
-> **Language:** Application logic is implemented in Java. The project includes a Java importer for a legacy flat-file data format; it does not include C application source files.
-
 ## Capabilities
 
-### Buyer workflows
-
-- Browse the showroom inventory from the console.
-- Search and filter vehicles, sort results, and compare cars.
-- Place or cancel timed reservations.
-- Join the FIFO waitlist when a vehicle is unavailable.
-- Purchase an available vehicle and generate a receipt.
-- Review recently viewed vehicles during the session.
-
-### Seller and management workflows
-
-- Add, view, update, and remove inventory records.
-- Review sales history and generate sales or inventory reports.
-- Undo supported inventory operations.
-- Import CSV and legacy-format records with validation.
-- Run batch commands for repeatable inventory operations.
-- Back up and restore application data, and inspect the audit log.
-- Launch interactive demonstrations of Java concurrency concepts.
+| Showroom workflow | What RevLine supports |
+| --- | --- |
+| **Explore inventory** | Browse vehicles, search by details, filter results, sort listings, and compare cars. |
+| **Manage reservations** | Place or cancel timed holds and maintain a first-in, first-out waitlist. |
+| **Complete sales** | Sell available vehicles, keep a sales record, and generate receipts. |
+| **Manage operations** | Add, update, or remove eligible inventory; undo supported changes; review audit history. |
+| **Analyze performance** | Generate inventory and sales reports using Java collections and streams. |
+| **Move and protect data** | Import CSV or legacy-format records, run batch commands, and back up or restore data. |
+| **Explore Java concurrency** | Run interactive demonstrations of thread coordination and concurrent showroom operations. |
 
 The Buyer/Seller menu selects a workflow. It is not an authentication or access-control boundary.
+
+## Engineering highlights
+
+| Design area | Implementation | Why it is useful to explore |
+| --- | --- | --- |
+| **Persistence boundary** | Generic repository contract with CSV and SQLite/JDBC implementations. | Shows how services can work through storage contracts instead of depending on one file format. |
+| **Inventory indexing** | `ArrayList`, `HashMap`, and `HashSet` managed by `InventoryService`. | Demonstrates choosing collections for ordered listings, ID lookup, and duplicate detection. |
+| **Search and comparison** | Composable filters, comparator-based sorting, and a comparison service. | Keeps browse and compare workflows separate from console rendering. |
+| **Reservation lifecycle** | Timed reservations managed with a priority queue and an ID index. | Combines expiry handling with fast lookup and synchronized operations. |
+| **Undo and browsing history** | `ArrayDeque`-based undo history and a bounded access-order `LinkedHashMap` cache. | Uses collection behavior to model two distinct user-facing workflows. |
+| **Sales and concurrency** | Shared inventory coordination, request queue, and concurrency demonstrations. | Makes race conditions and guarded state changes visible in a showroom scenario. |
+| **Reporting** | Stream-based inventory and sales analytics. | Provides concrete examples of filtering, grouping, sorting, and aggregating domain data. |
+| **Data handling** | Validation, CSV parsing, prepared JDBC statements, imports, and backup/restore utilities. | Connects defensive input handling to persistence and recovery workflows. |
+
+Useful code entry points: [`InventoryService`](src/main/java/com/revline/service/InventoryService.java), [`ReservationManager`](src/main/java/com/revline/service/ReservationManager.java), [`ReportService`](src/main/java/com/revline/service/ReportService.java), [`Repository`](src/main/java/com/revline/repository/Repository.java), and [`RevLineApp`](src/main/java/com/revline/app/RevLineApp.java).
 
 ## Architecture
 
@@ -129,6 +141,7 @@ data/
   sample/        Example imports and batch input
   legacy/        Legacy-format import example
 docs/
+  assets/        Repository banner artwork
   diagrams/      Mermaid architecture and workflow diagrams
   RevLine_Presentation.pptx
 lib/             SQLite JDBC driver
