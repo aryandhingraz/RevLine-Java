@@ -155,13 +155,18 @@ To publish local edits, commit and push them to GitHub. The repository is public
 
 RevLine is a local, single-showroom console application. It does not provide a web interface, online payments, authentication, cloud hosting, or networked multi-user operation. The Buyer/Seller menu is for navigating the demo workflows only.
 
-## Project materials
+## Project documentation
 
+- [Problem statement](docs/01_PROBLEM_STATEMENT.md) — context, users, and the proposed solution.
+- [Objectives and scope](docs/02_OBJECTIVES_SCOPE.md) — use cases, assumptions, and boundaries.
+- [System design](docs/03_DESIGN.md) — architecture, class and sequence diagrams, data model, and design decisions.
+- [Java concept map](docs/04_CONCEPT_MAP.md) — course topics linked to implementation areas.
+- [Legacy data migration report](docs/05_C_TO_JAVA.md) — maps the historical data model and workflows to the Java implementation. No C source is included in the current project.
+- [Progress and verification record](docs/PROGRESS.md) — milestone history, scope, and recorded verification evidence.
+- [Project ownership record](docs/TEAM_OWNERSHIP.md) — attribution and confirmed collaboration details.
 - [Presentation](docs/RevLine_Presentation.pptx)
-- [Database schema](sql/schema.sql)
-- [Seed SQL](sql/seed.sql)
-- [Sample SQL queries](sql/sample_queries.sql)
-- [Change history](CHANGELOG.md)
+
+Related resources: [class diagram](docs/diagrams/class.mmd), [entity relationship diagram](docs/diagrams/er.mmd), [package diagram](docs/diagrams/package.mmd), [database schema](sql/schema.sql), [seed SQL](sql/seed.sql), [sample SQL queries](sql/sample_queries.sql), and [change history](CHANGELOG.md).
 
 ## License
 
