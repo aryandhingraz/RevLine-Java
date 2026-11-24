@@ -1,0 +1,21 @@
+# CodeRabbit applies these settings after its GitHub App is installed and enabled
+# for this repository.
+language: en-US
+reviews:
+  profile: chill
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: false
+  review_status: true
+  collapse_walkthrough: false
+  path_filters:
+    - '!**/*.pptx'
+    - '!lib/*.jar'
+    - '!out/**'
+  path_instructions:
+    - path: 'src/main/java/**'
+      instructions: 'Review for correctness, clear Java 17 practices, safe persistence, and preservation of existing behavior. Do not suggest broad rewrites without a concrete defect.'
+    - path: 'sql/**'
+      instructions: 'Check schema and query correctness, input safety, and consistency with the JDBC repositories.'
+    - path: 'scripts/**'
+      instructions: 'Check that commands work from the repository root on the target operating system.'

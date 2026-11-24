@@ -1,5 +1,7 @@
 package com.revline.repository;
 
+import com.revline.util.AppPaths;
+import com.revline.util.FileUtil;
 import com.revline.util.exception.RepositoryException;
 
 import java.io.File;
@@ -14,7 +16,7 @@ import java.sql.Statement;
  */
 public final class DatabaseManager {
 
-    public static final String DEFAULT_DB_PATH = "data/revline.db";
+    public static final String DEFAULT_DB_PATH = AppPaths.RUNTIME_DB;
     public static final String DEFAULT_JDBC_URL = "jdbc:sqlite:" + DEFAULT_DB_PATH;
     public static final String IN_MEMORY_URL = "jdbc:sqlite::memory:";
     public static final String DRIVER_CLASS_NAME = "org.sqlite.JDBC";
@@ -74,16 +76,10 @@ public final class DatabaseManager {
     }
 
     /**
-     * Closes any database resource without throwing checked exceptions.
+     * Closes any database resource without throwing checked exceptions (delegates to FileUtil.closeQuietly).
      */
     public static void closeQuietly(AutoCloseable resource) {
-        if (resource != null) {
-            try {
-                resource.close();
-            } catch (Exception ignored) {
-                // Suppress exception on clean shutdown
-            }
-        }
+        FileUtil.closeQuietly(resource);
     }
 
     private static void ensureDirectoryForUrl(String jdbcUrl) {

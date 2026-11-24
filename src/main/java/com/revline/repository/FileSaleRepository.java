@@ -1,5 +1,6 @@
 package com.revline.repository;
 
+import com.revline.model.Car;
 import com.revline.model.Sale;
 import com.revline.util.FileUtil;
 import com.revline.util.exception.DataFormatException;
@@ -152,6 +153,11 @@ public class FileSaleRepository implements SaleRepository {
             }
         }
         return max + 1;
+    }
+
+    @Override
+    public synchronized void recordSale(Sale sale, Car soldCar) throws RepositoryException {
+        save(sale);
     }
 
     private void persistAll() throws RepositoryException {

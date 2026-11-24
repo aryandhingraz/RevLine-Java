@@ -48,7 +48,6 @@ public final class AutoSaveThread extends Thread {
             try {
                 Thread.sleep(intervalMs);
             } catch (InterruptedException e) {
-                // Restore interrupt status and exit loop cleanly (L10)
                 Thread.currentThread().interrupt();
                 break;
             }
@@ -56,22 +55,25 @@ public final class AutoSaveThread extends Thread {
             if (!running || isInterrupted()) {
                 break;
             }
-
-            try {
-                inventoryService.saveSnapshot();
-                saveCount++;
-                if (logger != null) {
-                    logger.log("AUTOSAVE", "SUCCESS", "AutoSave snapshot #" + saveCount + " persisted successfully");
-                }
-            } catch (RepositoryException e) {
-                if (logger != null) {
-                    logger.log("AUTOSAVE", "ERROR", "AutoSave snapshot failed: " + e.getMessage());
-                }
-            }
+            performAutoSave();
         }
 
         if (logger != null) {
             logger.log("AUTOSAVE", "STOP", "AutoSaveThread shutdown complete");
+        }
+    }
+
+    private void performAutoSave() {
+        try {
+            inventoryService.saveSnapshot();
+            saveCount++;
+            if (logger != null) {
+                logger.log("AUTOSAVE", "SUCCESS", "AutoSave snapshot #" + saveCount + " persisted successfully");
+            }
+        } catch (RepositoryException e) {
+            if (logger != null) {
+                logger.log("AUTOSAVE", "ERROR", "AutoSave snapshot failed: " + e.getMessage());
+            }
         }
     }
 

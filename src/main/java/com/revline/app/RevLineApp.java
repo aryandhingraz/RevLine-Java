@@ -22,8 +22,10 @@ import com.revline.service.WaitlistService;
 import com.revline.ui.Banner;
 import com.revline.ui.InputReader;
 import com.revline.util.AppLogger;
+import com.revline.util.AppPaths;
 import com.revline.util.exception.RepositoryException;
 
+import java.io.File;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
@@ -37,106 +39,197 @@ import java.sql.Connection;
  */
 public class RevLineApp {
 
-    public static void main(String[] args) {
-        // Enforce UTF-8 output on console for crisp box-drawing frames (L25, §3.4)
-        try {
-            System.setOut(new PrintStream(System.out, true, StandardCharsets.UTF_8.name()));
-        } catch (Exception ignored) {
-            // Fallback to platform default if UTF-8 stream wrapping fails
+    static class StorageComponents {
+        final CarRepository carRepo;
+        final SaleRepository saleRepo;
+        Connection connection;
+        final String engineName;
+        final String storagePath;
+        final boolean wasSeeded;
+
+        StorageComponents(CarRepository carRepo, SaleRepository saleRepo, Connection connection,
+                          String engineName, String storagePath, boolean wasSeeded) {
+            this.carRepo = carRepo;
+            this.saleRepo = saleRepo;
+            this.connection = connection;
+            this.engineName = engineName;
+            this.storagePath = storagePath;
+            this.wasSeeded = wasSeeded;
         }
 
-        boolean useJdbc = false;
-        for (String arg : args) {
-            if (arg.equalsIgnoreCase("--storage=jdbc") || arg.equalsIgnoreCase("--jdbc")) {
-                useJdbc = true;
-                break;
+        public synchronized boolean isJdbcActive() {
+            return connection != null;
+        }
+
+        public synchronized Connection getConnection() {
+            return connection;
+        }
+
+        public synchronized void closeDatabaseConnection() {
+            if (connection != null) {
+                DatabaseManager.closeQuietly(connection);
+                connection = null;
             }
         }
 
-        Connection jdbcConnection = null;
+        public synchronized void reconnectDatabase() throws RepositoryException {
+            if (carRepo instanceof JdbcCarRepository && saleRepo instanceof JdbcSaleRepository) {
+                closeDatabaseConnection();
+                this.connection = StorageBootstrap.initDatabase();
+                ((JdbcCarRepository) carRepo).updateConnection(this.connection);
+                ((JdbcSaleRepository) saleRepo).updateConnection(this.connection);
+            }
+        }
+    }
+
+    private static class ServiceContainer {
+        final InventoryService inventoryService;
+        final SearchService searchService;
+        final SalesService salesService;
+        final ComparisonService comparisonService;
+        final RecentlyViewed recentlyViewed;
+        final ReportService reportService;
+        final DataToolsService dataToolsService;
+
+        ServiceContainer(InventoryService inventory, SearchService search, SalesService sales,
+                         ComparisonService comparison, RecentlyViewed viewed, ReportService report,
+                         DataToolsService dataTools) {
+            this.inventoryService = inventory;
+            this.searchService = search;
+            this.salesService = sales;
+            this.comparisonService = comparison;
+            this.recentlyViewed = viewed;
+            this.reportService = report;
+            this.dataToolsService = dataTools;
+        }
+    }
+
+    public static void main(String[] args) {
+        initConsoleEncoding();
+        boolean useJdbc = isJdbcRequested(args);
+        StorageComponents storage = null;
+
         try {
             AppLogger logger = AppLogger.getInstance();
-            CarRepository carRepo;
-            SaleRepository saleRepo;
-            String engineName;
-            String storagePath;
-            boolean wasSeeded = false;
+            storage = initStorage(useJdbc);
 
-            if (useJdbc) {
-                // Initialize SQLite JDBC Persistence (Phase 4, L17-L20)
-                jdbcConnection = StorageBootstrap.initDatabase();
-                carRepo = new JdbcCarRepository(jdbcConnection);
-                saleRepo = new JdbcSaleRepository(jdbcConnection);
-                engineName = "SQLite Relational Database (JdbcCarRepository & JdbcSaleRepository)";
-                storagePath = DatabaseManager.DEFAULT_DB_PATH;
-            } else {
-                // Initialize CSV Flat-File Persistence (Phase 2 & 3, L26-L27)
-                StorageBootstrap.BootInfo boot = StorageBootstrap.init();
-                carRepo = new FileCarRepository(boot.carsFile);
-                saleRepo = new FileSaleRepository(boot.salesFile);
-                engineName = "CSV Flat-File (FileCarRepository & FileSaleRepository)";
-                storagePath = boot.carsFile.getPath();
-                wasSeeded = boot.wasCarsSeeded;
-            }
+            ServiceContainer services = initServices(storage, logger);
+            AutoSaveThread autoSave = startAutoSave(services.inventoryService, logger);
+            Thread expiryThread = startReservationExpiry(services.salesService, logger);
 
-            // Initialize Domain Services & Utilities
-            UndoManager undoManager = new UndoManager();
-            InventoryService inventoryService = new InventoryService(carRepo, undoManager, logger);
-            SearchService searchService = new SearchService(inventoryService);
-            ReservationManager reservationManager = new ReservationManager();
-            WaitlistService waitlistService = new WaitlistService();
-            SalesService salesService = new SalesService(inventoryService, saleRepo, reservationManager, waitlistService, logger);
-            ComparisonService comparisonService = new ComparisonService();
-            RecentlyViewed recentlyViewed = new RecentlyViewed();
-            ReportService reportService = new ReportService(inventoryService, saleRepo);
-            DataToolsService dataToolsService = new DataToolsService(logger);
-
-            // Initialize & Launch Background Daemon Threads (Phase 6, L9-L12)
-            AutoSaveThread autoSaveThread = new AutoSaveThread(inventoryService, logger);
-            autoSaveThread.start();
-
-            ReservationExpiryThread expiryRunnable = new ReservationExpiryThread(salesService, logger);
-            Thread expiryThread = new Thread(expiryRunnable, "ReservationExpiryThread");
-            expiryThread.setDaemon(true);
-            expiryThread.start();
-
-            // JVM Graceful Shutdown Hook (L10)
-            final Connection connForHook = jdbcConnection;
-            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-                autoSaveThread.shutdown();
-                expiryRunnable.shutdown();
-                expiryThread.interrupt();
-                try {
-                    autoSaveThread.join(1000);
-                    expiryThread.join(1000);
-                } catch (InterruptedException ignored) {}
-                DatabaseManager.closeQuietly(connForHook);
-            }, "RevLine-ShutdownHook"));
-
-            // Display C-style System Boot Panel & Brand Logo
-            Banner.printBootPanel(engineName, storagePath, wasSeeded, inventoryService.count());
-            Banner.printLogo();
-
-            // Start Interactive Controller
-            InputReader reader = new InputReader();
-            MenuController controller = new MenuController(
-                    inventoryService,
-                    searchService,
-                    salesService,
-                    comparisonService,
-                    recentlyViewed,
-                    reportService,
-                    dataToolsService,
-                    logger,
-                    reader
-            );
-            controller.run();
+            registerShutdownHook(autoSave, expiryThread, storage);
+            displayWelcome(storage, services.inventoryService);
+            runMenu(services, storage, logger);
 
         } catch (RepositoryException e) {
-            System.err.println("\n[CRITICAL ERROR] Failed to initialize storage: " + e.getMessage());
-            e.printStackTrace();
+            handleFatalError(e);
         } finally {
-            DatabaseManager.closeQuietly(jdbcConnection);
+            if (storage != null) {
+                storage.closeDatabaseConnection();
+            }
         }
+    }
+
+    private static void initConsoleEncoding() {
+        try {
+            System.setOut(new PrintStream(System.out, true, StandardCharsets.UTF_8.name()));
+        } catch (java.io.UnsupportedEncodingException e) {
+            // Platform default encoding is retained if UTF-8 stream wrapping fails
+        }
+    }
+
+    private static boolean isJdbcRequested(String[] args) {
+        if (args == null) return false;
+        for (String arg : args) {
+            if (arg.equalsIgnoreCase("--storage=jdbc") || arg.equalsIgnoreCase("--jdbc")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static StorageComponents initStorage(boolean useJdbc) throws RepositoryException {
+        if (useJdbc) {
+            Connection conn = StorageBootstrap.initDatabase();
+            CarRepository carRepo = new JdbcCarRepository(conn);
+            SaleRepository saleRepo = new JdbcSaleRepository(conn);
+            String engine = "SQLite Relational Database (JdbcCarRepository & JdbcSaleRepository)";
+            return new StorageComponents(carRepo, saleRepo, conn, engine, DatabaseManager.DEFAULT_DB_PATH, false);
+        } else {
+            StorageBootstrap.BootInfo boot = StorageBootstrap.init();
+            CarRepository carRepo = new FileCarRepository(boot.carsFile);
+            SaleRepository saleRepo = new FileSaleRepository(boot.salesFile);
+            String engine = "CSV Flat-File (FileCarRepository & FileSaleRepository)";
+            return new StorageComponents(carRepo, saleRepo, null, engine, boot.carsFile.getPath(), boot.wasCarsSeeded);
+        }
+    }
+
+    private static ServiceContainer initServices(StorageComponents storage, AppLogger logger) throws RepositoryException {
+        UndoManager undo = new UndoManager();
+        InventoryService inventory = new InventoryService(storage.carRepo, undo, logger);
+        int resetCount = inventory.resetStaleReservations();
+        if (resetCount > 0 && logger != null) {
+            logger.log("APP", "STARTUP", "Auto-reset " + resetCount + " stale RESERVED car(s) to AVAILABLE.");
+        }
+        SearchService search = new SearchService(inventory);
+        ReservationManager reservations = new ReservationManager();
+        WaitlistService waitlist = new WaitlistService();
+        SalesService sales = new SalesService(inventory, storage.saleRepo, reservations, waitlist, logger);
+        ComparisonService comparison = new ComparisonService();
+        RecentlyViewed viewed = new RecentlyViewed();
+        ReportService reports = new ReportService(inventory, storage.saleRepo);
+        DataToolsService dataTools = new DataToolsService(logger);
+
+        return new ServiceContainer(inventory, search, sales, comparison, viewed, reports, dataTools);
+    }
+
+    private static AutoSaveThread startAutoSave(InventoryService inventory, AppLogger logger) {
+        AutoSaveThread thread = new AutoSaveThread(inventory, logger);
+        thread.start();
+        return thread;
+    }
+
+    private static Thread startReservationExpiry(SalesService sales, AppLogger logger) {
+        ReservationExpiryThread task = new ReservationExpiryThread(sales, logger);
+        Thread thread = new Thread(task, "ReservationExpiryThread");
+        thread.setDaemon(true);
+        thread.start();
+        return thread;
+    }
+
+    private static void registerShutdownHook(AutoSaveThread autoSave, Thread expiryThread, StorageComponents storage) {
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            autoSave.shutdown();
+            expiryThread.interrupt();
+            try {
+                autoSave.join(1000);
+                expiryThread.join(1000);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            if (storage != null) {
+                storage.closeDatabaseConnection();
+            }
+        }, "RevLine-ShutdownHook"));
+    }
+
+    private static void displayWelcome(StorageComponents storage, InventoryService inventory) {
+        Banner.printBootPanel(storage.engineName, storage.storagePath, storage.wasSeeded, inventory.count());
+        Banner.printLogo();
+    }
+
+    private static void runMenu(ServiceContainer s, StorageComponents storage, AppLogger logger) {
+        InputReader reader = new InputReader();
+        MenuController controller = new MenuController(
+                s.inventoryService, s.searchService, s.salesService, s.comparisonService,
+                s.recentlyViewed, s.reportService, s.dataToolsService, storage, logger, reader
+        );
+        controller.run();
+    }
+
+    private static void handleFatalError(RepositoryException e) {
+        System.err.println("\n[CRITICAL ERROR] Failed to initialize storage: " + e.getMessage());
+        AppLogger errorLogger = new AppLogger(new File(AppPaths.ERROR_LOG));
+        errorLogger.logError("SYSTEM", "STORAGE_INIT_FAIL", e);
     }
 }

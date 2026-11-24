@@ -99,7 +99,7 @@ public class ReportService {
     }
 
     // =========================================================================
-    // R6: Top-N by horsepower (EX-4: filter non-sold -> sorted -> limit -> map)
+    // R6: Top-N by horsepower (filter non-sold -> sorted -> limit -> map)
     // =========================================================================
     public List<String> topNByHorsepower(int n) {
         if (n <= 0) {
@@ -114,7 +114,7 @@ public class ReportService {
     }
 
     // =========================================================================
-    // R7: Average price by brand (EX-5: groupingBy brand + averagingDouble)
+    // R7: Average price by brand (groupingBy brand + averagingDouble)
     // =========================================================================
     public Map<String, Double> averagePriceByBrand() {
         return inventoryService.findAll().stream()
@@ -167,6 +167,8 @@ public class ReportService {
 
     // =========================================================================
     // R12: Fastest 0-100 acceleration per fuel type (groupingBy + minBy)
+    // Optional represents "maybe a value" produced by Collectors.minBy on possibly empty groups.
+    // Callers safely unwrap via isPresent() and get() to inspect the winning vehicle.
     // =========================================================================
     public Map<FuelType, Optional<Car>> getFastestPerFuelType() {
         return inventoryService.findAll().stream()

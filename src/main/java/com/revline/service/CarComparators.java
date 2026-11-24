@@ -32,18 +32,17 @@ public final class CarComparators {
             .thenComparing(Car::getModel, String.CASE_INSENSITIVE_ORDER);
 
     // =========================================================================
-    // STUDENT EXERCISE EX-2 ZONE
+    // Value-For-Money Comparator (L8)
     // =========================================================================
 
     /**
-     * EX-2: Value-for-money comparator (L8).
+     * Value-for-money comparator (L8).
      * Ranks cars by horsepower per $100,000 of price (higher is better).
      * Formula: score = (horsepower / price) * 100,000.0
      * Higher score comes first (descending).
      * If two cars have identical scores (within 0.001), tie-break by acceleration ascending (quicker 0-100 first).
      *
      * @return Comparator ranking cars by value-for-money
-     * @see docs/learning/EX2_HINT.md
      */
     public static Comparator<Car> byValueForMoney() {
         return (c1, c2) -> {

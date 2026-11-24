@@ -28,7 +28,7 @@ set "CP_LIB="
 if exist lib\*.jar set "CP_LIB=-cp lib\*"
 
 echo Compiling sources (Java 17 target)...
-javac --release 17 -Xlint:all -encoding UTF-8 -d out\main %CP_LIB% -sourcepath src\main\java !SOURCES!
+javac --release 17 -Xlint:all -Werror -encoding UTF-8 -d out\main %CP_LIB% -sourcepath src\main\java !SOURCES!
 
 if %ERRORLEVEL% NEQ 0 (
     echo [FAIL] Compilation failed.

@@ -6,9 +6,11 @@ import com.revline.model.Status;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
 import java.io.IOException;
 import java.io.StreamTokenizer;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,7 +31,7 @@ final class ScriptRunner {
         int failed = 0;
         List<String> log = new ArrayList<>();
 
-        try (BufferedReader br = new BufferedReader(new FileReader(scriptFile))) {
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(scriptFile), StandardCharsets.UTF_8))) {
             StreamTokenizer st = new StreamTokenizer(br);
             st.resetSyntax();
             st.whitespaceChars(0, ' ');

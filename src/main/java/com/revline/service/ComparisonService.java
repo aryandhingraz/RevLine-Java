@@ -120,7 +120,14 @@ public class ComparisonService {
             winnerCol[i] = -1; // -1 means no winner for this row
         }
 
-        for (int c = 0; c < numCars; c++) {
+        populateGrid(cars, grid);
+        calculateRowWinners(cars, winnerCol);
+
+        return new ComparisonResult(cars, grid, winnerCol);
+    }
+
+    private void populateGrid(List<Car> cars, String[][] grid) {
+        for (int c = 0; c < cars.size(); c++) {
             Car car = cars.get(c);
             grid[0][c] = "#" + car.getId();
             grid[1][c] = car.getBrand() + " " + car.getModel();
@@ -131,21 +138,14 @@ public class ComparisonService {
             grid[6][c] = car.getFuelType().name();
             grid[7][c] = car.getStatus().name();
         }
+    }
 
+    private void calculateRowWinners(List<Car> cars, int[] winnerCol) {
         // Determine winners per metric (L2 algorithm + min/max analysis)
-        // Row 2: Price (lowest wins)
-        winnerCol[2] = findMinDouble(cars, Car::getPrice);
-
-        // Row 3: Top Speed (highest wins)
-        winnerCol[3] = findMaxInt(cars, Car::getTopSpeed);
-
-        // Row 4: Horsepower (highest wins)
-        winnerCol[4] = findMaxInt(cars, Car::getHorsepower);
-
-        // Row 5: 0-100 Acceleration (lowest/quicker wins)
-        winnerCol[5] = findMinDouble(cars, Car::getAcceleration);
-
-        return new ComparisonResult(cars, grid, winnerCol);
+        winnerCol[2] = findMinDouble(cars, Car::getPrice);          // Price: lowest wins
+        winnerCol[3] = findMaxInt(cars, Car::getTopSpeed);          // Top Speed: highest wins
+        winnerCol[4] = findMaxInt(cars, Car::getHorsepower);        // Horsepower: highest wins
+        winnerCol[5] = findMinDouble(cars, Car::getAcceleration);    // Acceleration: lowest wins
     }
 
     private interface DoubleMetricExtractor {

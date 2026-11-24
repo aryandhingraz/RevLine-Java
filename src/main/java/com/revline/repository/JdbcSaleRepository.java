@@ -22,9 +22,16 @@ public class JdbcSaleRepository implements SaleRepository {
 
     private static final String SELECT_COLUMNS = "sale_id, car_id, buyer_name, seller_name, sale_date, price";
 
-    private final Connection connection;
+    private Connection connection;
 
     public JdbcSaleRepository(Connection connection) {
+        if (connection == null) {
+            throw new IllegalArgumentException("Connection cannot be null.");
+        }
+        this.connection = connection;
+    }
+
+    public synchronized void updateConnection(Connection connection) {
         if (connection == null) {
             throw new IllegalArgumentException("Connection cannot be null.");
         }
@@ -158,6 +165,11 @@ public class JdbcSaleRepository implements SaleRepository {
         } catch (SQLException e) {
             throw new RepositoryException("Failed to compute next sale ID.", e);
         }
+    }
+
+    @Override
+    public synchronized void recordSale(Sale sale, Car car) throws RepositoryException {
+        recordSaleAtomic(sale, car);
     }
 
     /**

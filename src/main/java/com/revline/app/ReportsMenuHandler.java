@@ -5,6 +5,7 @@ import com.revline.model.FuelType;
 import com.revline.service.ReportService;
 import com.revline.ui.InputReader;
 import com.revline.ui.MenuPrinter;
+import com.revline.util.AppPaths;
 import com.revline.util.FileUtil;
 import com.revline.util.Pair;
 import com.revline.util.exception.RepositoryException;
@@ -58,7 +59,7 @@ final class ReportsMenuHandler {
         int n = reader.readInt("  Enter N (number of top horsepower cars to list): ", 1, 50);
         List<String> topCars = reportService.topNByHorsepower(n);
         System.out.println();
-        System.out.println("--- TOP-" + n + " SUPERCAR POWER RANKINGS (EX-4 / R6) ---");
+        System.out.println("--- TOP-" + n + " SUPERCAR POWER RANKINGS (R6) ---");
         if (topCars.isEmpty()) {
             System.out.println("  No active vehicles available.");
         } else {
@@ -71,12 +72,14 @@ final class ReportsMenuHandler {
     private void handleAveragePriceByBrand() {
         Map<String, Double> brandAvgs = reportService.averagePriceByBrand();
         System.out.println();
-        System.out.println("--- AVERAGE PRICE BY BRAND (EX-5 / R7) ---");
+        System.out.println("--- AVERAGE PRICE BY BRAND (R7) ---");
         for (Map.Entry<String, Double> entry : brandAvgs.entrySet()) {
             System.out.printf("  - %-15s : $%,.2f\n", entry.getKey(), entry.getValue());
         }
     }
 
+    // Optional holds "maybe a value" returned by Collectors.minBy in case a category has no cars.
+    // Unwrapped safely using map/orElse or isPresent()/get() to prevent NullPointerException.
     private void handleFastestPerFuelType() {
         Map<FuelType, Optional<Car>> fastestMap = reportService.getFastestPerFuelType();
         System.out.println();
@@ -105,7 +108,7 @@ final class ReportsMenuHandler {
 
     private void handleExportReport() {
         String report = reportService.generateAllReportsSummary();
-        File exportDir = new File("data/exports");
+        File exportDir = new File(AppPaths.EXPORT_DIR);
         if (!exportDir.exists()) {
             exportDir.mkdirs();
         }

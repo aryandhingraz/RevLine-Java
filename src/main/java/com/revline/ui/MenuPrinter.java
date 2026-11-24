@@ -15,7 +15,7 @@ public final class MenuPrinter {
         System.out.println("║                                                                    ║");
         System.out.println("║  [1] Browse Showroom Supercars (Interactive Next / Previous)       ║");
         System.out.println("║  [2] Search & Filter Supercars (Multi-Field Search & Budget)       ║");
-        System.out.println("║  [3] Sort Supercars (Price, Top Speed, HP, EX-2 Value-for-Money)   ║");
+        System.out.println("║  [3] Sort Supercars (Price, Top Speed, HP, Value-for-Money)         ║");
         System.out.println("║  [4] Side-by-Side Supercar Comparison (2-4 Cars Spec Matrix)       ║");
         System.out.println("║  [5] Place Temporary Reservation (Hold Vehicle with Time-to-Live)  ║");
         System.out.println("║  [6] Purchase Supercar (Execute Sale & Generate Official Receipt)  ║");
@@ -38,7 +38,7 @@ public final class MenuPrinter {
         System.out.println("║  [2] Add New Supercar to Inventory                                 ║");
         System.out.println("║  [3] Update Supercar Specifications                                ║");
         System.out.println("║  [4] Delete Supercar from Inventory                                ║");
-        System.out.println("║  [5] Undo Last Inventory Action [EX-7]                             ║");
+        System.out.println("║  [5] Undo Last Inventory Action                                    ║");
         System.out.println("║  [6] Sales Transaction History & Receipts                          ║");
         System.out.println("║  [7] Advanced Analytics & Reports (R1-R15 Streams & Text Export)   ║");
         System.out.println("║  [8] Concurrency Lab (5 Deterministic Multithreading Demos - L9-16)║");
@@ -62,7 +62,7 @@ public final class MenuPrinter {
         System.out.println("║  [4] Horsepower: Most Powerful First                               ║");
         System.out.println("║  [5] Acceleration: 0-100 km/h Quickest First                       ║");
         System.out.println("║  [6] Brand & Model: Alphabetical (A-Z)                             ║");
-        System.out.println("║  [7] Value-for-Money: Horsepower per $100k [EX-2]                  ║");
+        System.out.println("║  [7] Value-for-Money: Horsepower per $100k                         ║");
         System.out.println("║  [0] Back to Menu                                                  ║");
         System.out.println("╚════════════════════════════════════════════════════════════════════╝");
     }
@@ -73,7 +73,7 @@ public final class MenuPrinter {
         System.out.println("║ SEARCH & FILTER OPTIONS (FilterBuilder - L21)                      ║");
         System.out.println("╠════════════════════════════════════════════════════════════════════╣");
         System.out.println("║  [1] Search by Exact Car ID                                        ║");
-        System.out.println("║  [2] Multi-Field Text Search (Brand, Model, Fuel) [EX-3]          ║");
+        System.out.println("║  [2] Multi-Field Text Search (Brand, Model, Fuel Type)             ║");
         System.out.println("║  [3] Budget Filter (Price Range)                                   ║");
         System.out.println("║  [4] Performance Filter (Min Speed & Min Horsepower)               ║");
         System.out.println("║  [5] Available Cars Only                                           ║");
@@ -88,8 +88,8 @@ public final class MenuPrinter {
         System.out.println("╠════════════════════════════════════════════════════════════════════╣");
         System.out.println("║  [1] Executive Analytics Summary (Full R1-R15 Suite)               ║");
         System.out.println("║  [2] Price Band Distribution Matrix (R13 2D Array int[3][4])       ║");
-        System.out.println("║  [3] Top-N Supercars by Horsepower (R6 - EX-4)                     ║");
-        System.out.println("║  [4] Average Price by Brand (R7 - EX-5)                            ║");
+        System.out.println("║  [3] Top-N Supercars by Horsepower (R6)                            ║");
+        System.out.println("║  [4] Average Price by Brand (R7)                                   ║");
         System.out.println("║  [5] Fastest 0-100 km/h Acceleration per Fuel Type (R12)           ║");
         System.out.println("║  [6] Stream Laziness & Short-Circuit Demonstration (R15)           ║");
         System.out.println("║  [7] Export Analytics Report to File (data/exports)                ║");
@@ -116,12 +116,11 @@ public final class MenuPrinter {
         System.out.println("╔════════════════════════════════════════════════════════════════════╗");
         System.out.println("║ REVLINE DATA TOOLS & FILE MANAGEMENT (L25-L27)                     ║");
         System.out.println("╠════════════════════════════════════════════════════════════════════╣");
-        System.out.println("║  [1] Import Legacy C Flat-File (data/legacy/cars.txt)              ║");
+        System.out.println("║  [1] Import Legacy-Format Vehicle Data (data/legacy/cars.txt)              ║");
         System.out.println("║  [2] Batch CSV Import with Error Reporting (data/sample)           ║");
         System.out.println("║  [3] StreamTokenizer Script Batch Execution (bulk_import.txt)      ║");
-        System.out.println("║  [4] Byte-Stream Full Database Backup (data/backups/cars.bak)      ║");
-        System.out.println("║  [5] Restore Database from Byte-Stream Backup                      ║");
-        System.out.println("║  [6] Generate Synthetic Supercars (Stress / Benchmarking)          ║");
+        System.out.println("║  [4] Byte-Stream Backup: Cars + Sales Data (data/backups)          ║");
+        System.out.println("║  [5] Restore Cars + Sales Data from Byte-Stream Backup             ║");
         System.out.println("║  [0] Back to Management Menu                                       ║");
         System.out.println("╚════════════════════════════════════════════════════════════════════╝");
     }

@@ -1,6 +1,6 @@
 -- ============================================================
 -- RevLine Car Management System — Relational Schema
--- Target: SQLite (ANSI-compatible DDL for optional MySQL switch)
+-- Target: SQLite database used by the Java JDBC implementation
 -- ============================================================
 
 CREATE TABLE IF NOT EXISTS cars (

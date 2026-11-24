@@ -74,16 +74,15 @@ public final class Validator {
     }
 
     // =========================================================================
-    // STUDENT EXERCISE EX-1 ZONE
+    // Fuel Type & Numeric Validation (L3, L4)
     // =========================================================================
 
     /**
-     * EX-1 (Part A): Checks if a fuel type string is valid (case-insensitive).
+     * Checks if a fuel type string is valid (case-insensitive).
      * Valid types: "PETROL", "HYBRID", "ELECTRIC" (or "Petrol", "Hybrid", "Electric").
      *
      * @param text input fuel string
      * @return true if valid, false if null, empty, or unrecognised
-     * @see docs/learning/EX1_HINT.md
      */
     public static boolean isValidFuelType(String text) {
         if (text == null || text.trim().isEmpty()) {
@@ -97,14 +96,13 @@ public final class Validator {
     }
 
     /**
-     * EX-1 (Part B): Parses a positive double (e.g. price) from string.
+     * Parses a positive double (e.g. price) from string.
      * Must trim whitespace, parse using Double.parseDouble(), and verify value > 0.0.
      *
      * @param text string containing a positive number
      * @param fieldName label for exception messages
      * @return parsed positive double
      * @throws InvalidCarException if text is blank, not a number, or <= 0.0
-     * @see docs/learning/EX1_HINT.md
      */
     public static double parsePositiveDouble(String text, String fieldName) {
         requireNonBlank(text, fieldName);

@@ -1,157 +1,92 @@
-# RevLine — Car Management System in Java
+# RevLine — Car Showroom Management System
 
-> **"Drive Passion. Live RevLine."**
+**A Java 17 console application for managing showroom inventory, reservations, sales, and reports.**
 
-A layered, enterprise-grade, console-driven backend application managing a supercar showroom — built as the guided project for **25CSE0202 · Programming in Java** (Unit VI), Chitkara University.
+RevLine models the day-to-day workflows of a single car showroom. It includes buyer and seller menus, searchable vehicle listings, timed reservations, sales processing, reporting, data import and backup tools, and two persistence options: CSV files and SQLite through JDBC.
 
-[![Java 17](https://img.shields.io/badge/Java-17%20LTS-orange.svg)](https://www.oracle.com/java/technologies/javase/jdk17-archive-downloads.html)
-[![Build Status](https://img.shields.io/badge/Build-Passing%20(0%20warnings)-brightgreen.svg)]()
-[![Tests Passing](https://img.shields.io/badge/Tests-116%2F116%20Passed-brightgreen.svg)]()
-[![Exercises](https://img.shields.io/badge/Exercises-9%2F9%20Complete-brightgreen.svg)]()
-[![Storage](https://img.shields.io/badge/Storage-CSV%20%7C%20SQLite%20JDBC-blue.svg)]()
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+This project was developed for **25CSE0202 — Programming in Java** and demonstrates object-oriented design, collections, generics, lambdas, file I/O, JDBC, exception handling, and concurrency.
 
----
+## Highlights
 
-## 1. Problem Statement & Objectives
+- Maintain vehicle inventory and review sales history.
+- Search, filter, sort, and compare vehicles.
+- Place and cancel timed reservations; handle a FIFO waitlist.
+- Complete sales and generate receipts.
+- Generate inventory and sales reports.
+- Import CSV and legacy-format data, run batch commands, and back up or restore application data.
+- Choose CSV persistence or SQLite JDBC persistence.
+- Explore interactive demonstrations of Java concurrency concepts.
 
-RevLine transforms a legacy procedural C prototype into a robust, object-oriented, concurrent showroom management system. It eliminates fatal memory crashes, unbounded input buffer overflows, race conditions in vehicle purchasing, and direct in-place file corruptions.
+> The Buyer/Seller menu is a workflow selector, not an authentication or authorization system. RevLine is a local, single-showroom console application; it does not provide a web interface, online payments, or networked multi-user access.
 
-- **Problem Statement**: Detailed specification in `docs/01_PROBLEM_STATEMENT.md`.
-- **Objectives & Scope**: 10 SMART objectives (O1–O10) and boundary assumptions in `docs/02_OBJECTIVES_SCOPE.md`.
-- **C to Java Conversion Report**: Full mapping and 12 defect resolutions in `docs/05_C_TO_JAVA_REPORT.md`.
+## Requirements
 
----
+- JDK 17 or newer
+- A terminal or command prompt
+- The SQLite JDBC driver is included in `lib/` for JDBC mode
 
-## 2. Complete Feature Matrix
+## Build and run
 
-| # | Feature Domain | Concrete Implementation | Syllabus Alignment | Status |
-|---|----------------|-------------------------|--------------------|:------:|
-| 1 | **Inventory CRUD** | Add, update, delete, view, restore via `InventoryService` with O(1) duplicate guard. | L5, L6–L8 | ✅ **Complete** |
-| 2 | **Interactive Browser** | Bidirectional Next / Previous showroom browsing via `ListIterator<Car>`. | L6, L7 | ✅ **Complete** |
-| 3 | **Multi-Field Search** | Case-insensitive multi-token querying across brand, model, and fuel (EX-3). | L6, L8 | ✅ **Complete** |
-| 4 | **Composable Filters** | `FilterBuilder` chaining `Predicate<Car>` filters (`and()`, `negate()`). | L21, L23 | ✅ **Complete** |
-| 5 | **Multi-Spec Sorting** | 7 sorting strategies via `CarComparators` + EX-2 `byValueForMoney()`. | L8 | ✅ **Complete** |
-| 6 | **Side-by-Side Matrix** | 2–4 vehicle specification comparison matrix with dynamic `*BEST` markers. | L2 | ✅ **Complete** |
-| 7 | **Sales & Atomic Ledger** | Synchronized `sellCar()`, ASCII receipt generation, rollback safety, `Sale` record. | L13, L16, L22 | ✅ **Complete** |
-| 8 | **Priority Holds & Waitlist** | Min-heap `ReservationManager` with sweep, FIFO `WaitlistService` queue. | L7, L8 | ✅ **Complete** |
-| 9 | **LIFO Undo Stack** | `UndoManager` stack (`ArrayDeque<UndoAction>`) reversing ADD, UPDATE, DELETE (EX-7). | L6, L7 | ✅ **Complete** |
-| 10 | **LRU Showroom Cache** | `RecentlyViewed` extending `LinkedHashMap` (`accessOrder = true`, capacity 5). | L9 | ✅ **Complete** |
-| 11 | **Analytical Streams (R1–R15)**| 15 stream pipelines, primitive `DoubleStream`, downstream collectors (EX-4, EX-5). | L21–L23 | ✅ **Complete** |
-| 12 | **Functional Programming** | `LambdaShowcase` demonstrating all 4 method reference kinds and standard interfaces. | L23 | ✅ **Complete** |
-| 13 | **Generics in Depth** | Type-safe `Pair<K,V>`, bounded `<T extends Comparable<T>> maxOf`, wildcard traversal. | L24 | ✅ **Complete** |
-| 14 | **Dual-Storage Engine** | Dynamic runtime switching between CSV flat-file and SQLite JDBC (`--storage=jdbc`). | L17–L20, L24 | ✅ **Complete** |
-| 15 | **SQL Injection Immunity** | Complete parameter binding via `PreparedStatement`; verified with `' OR '1'='1`. | L21 | ✅ **Complete** |
-| 16 | **Relational Transactions** | Multi-statement ACID transactions (`setAutoCommit(false)`, `commit()`, `rollback()`). | L22 | ✅ **Complete** |
-| 17 | **Background Daemons** | `AutoSaveThread` (`MIN_PRIORITY`, daemon, 30s) and `ReservationExpiryThread`. | L10–L12 | ✅ **Complete** |
-| 18 | **Producer-Consumer Buffer** | `PurchaseRequestQueue` (capacity 5, guarded wait/notifyAll, EX-8) and `SalesProcessor`. | L13–L16 | ✅ **Complete** |
-| 19 | **Concurrency Lab & Stress** | 5 deterministic educational demos + **20 stress rounds** of concurrent double-sell. | L9–L16 | ✅ **Complete** |
-| 20 | **Enterprise Data Tools** | Legacy C import, CSV import with line-by-line error reports, `StreamTokenizer` script batch, byte-identical backup/restore, synthetic generator. | L25–L27 | ✅ **Complete** |
-| 21 | **Crash-Safe File Writes** | Atomic `.tmp` file write, `.bak` backup promotion, and safe rollback via `safeWrite`. | L16, L25 | ✅ **Complete** |
-| 22 | **Operational Audit Logging**| Persistent, timestamped audit log saved to `logs/audit.log` and inspectable in CLI. | L2, L25 | ✅ **Complete** |
+From the repository root:
 
----
+### Windows
 
-## 3. Quick Start (Windows & Unix)
-
-### Prerequisites
-- **JDK 17 LTS** (Eclipse Temurin 17+ recommended)
-- **Git**
-
-### Clone & Build
-```powershell
-# Windows (PowerShell)
-git clone https://github.com/aryandhingraz/RevLine-Java.git
-cd RevLine-Java
-.\scripts\build.bat
+```bat
+scripts\build.bat
+scripts\run.bat
 ```
+
+To use SQLite:
+
+```bat
+scripts\run.bat --storage=jdbc
+```
+
+### Linux or macOS
+
 ```bash
-# Unix (Linux / macOS)
-git clone https://github.com/aryandhingraz/RevLine-Java.git
-cd RevLine-Java
-chmod +x scripts/*.sh
-./scripts/build.sh
+bash scripts/build.sh
+bash scripts/run.sh
 ```
 
-### Run Application
-```powershell
-# Standard CSV Flat-File Storage (Default)
-.\scripts\run.bat
+To use SQLite:
 
-# Relational SQLite JDBC Storage Mode
-.\scripts\run.bat --storage=jdbc
+```bash
+bash scripts/run.sh --storage=jdbc
 ```
 
-### Run In-House Test Suite
-```powershell
-.\scripts\test.bat
-```
-*Executes all 116 automated checks in ~620 ms with zero dependencies.*
+The build targets Java 17 and treats compiler warnings as errors.
 
----
+## Storage and sample data
 
-## 4. Project Directory Layout
+- CSV mode uses `data/cars.csv` and `data/sales.csv`. When runtime files are absent, the application initializes them from `data/seed/`.
+- SQLite mode stores its database at `data/revline.db`.
+- `data/sample/` contains example import and batch input files.
+- Generated databases, reports, backups, logs, and runtime CSV files are excluded from version control.
 
-```
-RevLine-Java/
-├─ src/main/java/com/revline/
-│  ├─ app/            Entry point (RevLineApp), StorageBootstrap, MenuController, View Handlers
-│  ├─ ui/             ConsoleTable (box renderer), MenuPrinter, InputReader, Banner
-│  ├─ model/          Vehicle (abstract), Car, Sale, Reservation, AuditEntry, enums (FuelType, Status)
-│  ├─ service/        InventoryService, SearchService, SalesService, Comparators, UndoManager,
-│  │                  RecentlyViewed (LRU), ReportService, DataToolsService, LambdaShowcase
-│  ├─ repository/     Repository (generic), CarRepository, SaleRepository, File & JDBC implementations
-│  ├─ concurrency/    AutoSaveThread, ReservationExpiryThread, PurchaseRequestQueue,
-│  │                  SalesProcessor, ConcurrencyLab (5 demos), ConcurrencyLabDemos
-│  └─ util/           Validator, AppLogger, FileUtil, Pair, GenericUtils, exceptions/
-├─ src/test/java/com/revline/
-│  ├─ Assert.java     Custom assertion framework (zero third-party dependencies)
-│  ├─ TestRunner.java Suite orchestrator executing 116 automated checks
-│  └─ *Test.java      22 test classes covering unit, boundary, stress, security, contract
-├─ data/              Seed data (cars.csv, sales.csv), legacy files, samples, backups, exports
-├─ lib/               sqlite-jdbc-3.54.1.0.jar (single permitted driver dependency)
-├─ scripts/           build, test, run, demo scripts (.bat and .sh)
-├─ sql/               Relational DDL schema, seed data, sample queries
-└─ docs/              All coursework deliverables, architecture diagrams, test plan, viva guides
+## Repository layout
+
+```text
+src/main/java/com/revline/  Application, domain model, services, repositories, UI, utilities
+data/                       Seed data and sample inputs
+docs/                       Design diagrams and project presentation
+lib/                        SQLite JDBC driver
+scripts/                    Windows and Unix build/run scripts
+sql/                        Database schema, seed statements, sample queries
 ```
 
----
+## Continuous integration
 
-## 5. Student Contributions & Academic Integrity
+GitHub Actions compiles the project on pushes and pull requests using JDK 17. To publish local changes to GitHub, commit and push them; each push starts a fresh build check automatically. A successful build verifies compilation, while it does not claim to verify every interactive workflow.
 
-This project follows the **pair-programmer and technical mentor model**, adhering strictly to academic integrity standards. All 9 student exercises were implemented and owned by the student:
+## Project materials
 
-| Exercise | Component & Method | Syllabus | Status | Evidence |
-|---|---|---|:---:|---|
-| **EX-1 (Part A)** | `Validator.isValidFuelType(String)` | L3 | ✅ Complete | Commit `7fbdfd3` |
-| **EX-1 (Part B)** | `Validator.parsePositiveDouble(String, String)` | L3 | ✅ Complete | Commit `7fbdfd3` |
-| **EX-2** | `CarComparators.byValueForMoney()` | L8 | ✅ Complete | Commit `fc78366` |
-| **EX-3** | `SearchService.search(String query)` | L6, L8 | ✅ Complete | Commit `fc2bb19` |
-| **EX-4** | `ReportService.topNByHorsepower(int)` | L21–L23 | ✅ Complete | Commit `3448e62` |
-| **EX-5** | `ReportService.averagePriceByBrand()` | L21–L23 | ✅ Complete | Commit `3448e62` |
-| **EX-6** | `JdbcCarRepository.findByPriceRange(double, double)` | L17–L20 | ✅ Complete | Commit `3448e62` |
-| **EX-7** | `UndoManager.undo(InventoryService)` | L6–L7 | ✅ Complete | Commit `197baaa` |
-| **EX-8** | `PurchaseRequestQueue.take()` | L13–L16 | ✅ Complete | Commit `e5e433e` |
+- [Project presentation](docs/RevLine_Presentation.pptx)
+- [Class diagram](docs/diagrams/class.mmd)
+- [ER diagram](docs/diagrams/er.mmd)
+- [Package diagram](docs/diagrams/package.mmd)
+- [Sequence diagrams](docs/diagrams/)
 
----
+## License
 
-## 6. Comprehensive Documentation Index
-
-All coursework deliverables are located in the `docs/` folder:
-- **`docs/01_PROBLEM_STATEMENT.md`**: Student problem statement.
-- **`docs/02_OBJECTIVES_SCOPE.md`**: SMART objectives and scope.
-- **`docs/03_DESIGN.md`**: Complete system architecture and 6 Mermaid diagrams.
-- **`docs/04_CONCEPT_MAP.md`**: Syllabus lecture mapping for Lectures 1–30.
-- **`docs/05_C_TO_JAVA_REPORT.md`**: Legacy C translation and defect resolution report.
-- **`docs/TEST_PLAN.md`**: Specification of all 116 automated checks.
-- **`docs/VIVA.md`**: 85 categorized viva questions with code pointers.
-- **`docs/learning/MOCK_VIVA.md`**: 20 representative mock viva practice questions.
-- **`docs/DEMO_SCRIPT.md`**: 10-minute live evaluation presentation script.
-- **`docs/FINAL_AUDIT.md`**: Final self-audit checklist (all 14 items green).
-- **`docs/RUBRIC_TRACEABILITY.md`**: Traceability table across Rubric Rows 1–5 (25/25 target).
-
----
-
-## 7. License
-
-This project is licensed under the [MIT License](LICENSE).
+Released under the MIT License. See [LICENSE](LICENSE).

@@ -3,6 +3,7 @@ package com.revline.service;
 import com.revline.model.Car;
 import com.revline.model.Status;
 import com.revline.repository.CarRepository;
+import com.revline.repository.FileCarRepository;
 import com.revline.util.AppLogger;
 import com.revline.util.exception.CarNotAvailableException;
 import com.revline.util.exception.CarNotFoundException;
@@ -47,30 +48,44 @@ public class InventoryService {
     /** Reloads in-memory collections from underlying storage. */
     public final void reload() throws RepositoryException {
         synchronized (lock) {
+            if (repository instanceof FileCarRepository) {
+                ((FileCarRepository) repository).load();
+            }
             cars.clear();
             index.clear();
             duplicateGuard.clear();
             for (Car c : repository.findAll()) {
                 cars.add(c.copy());
                 index.put(c.getId(), c.copy());
-                duplicateGuard.add(makeDuplicateKey(c.getBrand(), c.getModel()));
+                duplicateGuard.add(InventorySupport.duplicateKey(c.getBrand(), c.getModel()));
             }
         }
     }
 
-    private void validateSpecs(Car car) {
-        InventorySupport.validateSpecs(car);
-    }
-
-    private void replaceInList(Car car) {
-        InventorySupport.replaceInList(cars, car);
+    /**
+     * Resets any stale RESERVED vehicles to AVAILABLE on application startup.
+     * Since in-memory reservations do not survive restarts, any vehicle left in
+     * RESERVED status would otherwise be permanently stuck.
+     *
+     * @return the number of vehicles reset to AVAILABLE
+     * @throws RepositoryException if saving fails
+     */
+    public int resetStaleReservations() throws RepositoryException {
+        synchronized (lock) {
+            int count = InventorySupport.resetStaleReservations(cars, index, repository);
+            if (count > 0 && logger != null) {
+                logger.log("SYSTEM", "RESERVATION_RESET",
+                        "Reset " + count + " stale RESERVED vehicle(s) to AVAILABLE on startup.");
+            }
+            return count;
+        }
     }
 
     /** Adds a new vehicle with duplicate checking and auto ID generation. */
     public Car addCar(Car car) throws RepositoryException {
-        validateSpecs(car);
+        InventorySupport.validateSpecs(car);
         synchronized (lock) {
-            String dupKey = makeDuplicateKey(car.getBrand(), car.getModel());
+            String dupKey = InventorySupport.duplicateKey(car.getBrand(), car.getModel());
             if (duplicateGuard.contains(dupKey)) {
                 throw new InvalidCarException("A vehicle with brand '" + car.getBrand()
                         + "' and model '" + car.getModel() + "' already exists.");
@@ -99,27 +114,24 @@ public class InventoryService {
 
     /** Updates an existing vehicle's specifications. Only AVAILABLE vehicles can be edited. */
     public Car updateCar(int id, Car updated) throws RepositoryException, CarNotFoundException, CarNotAvailableException {
-        validateSpecs(updated);
+        InventorySupport.validateSpecs(updated);
         synchronized (lock) {
             Car existing = index.get(id);
             if (existing == null) throw new CarNotFoundException(id);
-            if (existing.getStatus() != Status.AVAILABLE) {
-                throw new CarNotAvailableException(id, "Cannot update car with status " + existing.getStatus() + "; vehicle must be AVAILABLE.");
-            }
-            String oldKey = makeDuplicateKey(existing.getBrand(), existing.getModel());
-            String newKey = makeDuplicateKey(updated.getBrand(), updated.getModel());
-            if (!oldKey.equals(newKey) && duplicateGuard.contains(newKey)) {
-                throw new InvalidCarException("Another vehicle with brand '" + updated.getBrand() + "' and model '" + updated.getModel() + "' already exists.");
-            }
+            InventorySupport.verifyUpdatePermitted(existing, updated, id, duplicateGuard);
+
+            String oldKey = InventorySupport.duplicateKey(existing.getBrand(), existing.getModel());
+            String newKey = InventorySupport.duplicateKey(updated.getBrand(), updated.getModel());
+
             Car toSave = new Car(id, updated.getBrand(), updated.getModel(), updated.getPrice(),
                     updated.getTopSpeed(), updated.getFuelType(), updated.getHorsepower(),
                     updated.getAcceleration(), existing.getStatus());
+            repository.save(toSave);
             if (undoManager != null) {
                 undoManager.push(new UndoManager.UndoAction(UndoManager.ActionType.UPDATE, existing.copy(),
                         "Updated Car #" + id + " (" + existing.getBrand() + " " + existing.getModel() + ")"));
             }
-            repository.save(toSave);
-            replaceInList(toSave);
+            InventorySupport.replaceInList(cars, toSave);
             index.put(id, toSave.copy());
             if (!oldKey.equals(newKey)) {
                 duplicateGuard.remove(oldKey);
@@ -140,14 +152,14 @@ public class InventoryService {
             if (existing.getStatus() != Status.AVAILABLE) {
                 throw new CarNotAvailableException(id, "Cannot delete car with status " + existing.getStatus() + "; vehicle must be AVAILABLE.");
             }
+            repository.deleteById(id);
             if (undoManager != null) {
                 undoManager.push(new UndoManager.UndoAction(UndoManager.ActionType.DELETE, existing.copy(),
                         "Deleted Car #" + id + " (" + existing.getBrand() + " " + existing.getModel() + ")"));
             }
-            repository.deleteById(id);
             cars.removeIf(c -> c.getId() == id);
             index.remove(id);
-            duplicateGuard.remove(makeDuplicateKey(existing.getBrand(), existing.getModel()));
+            duplicateGuard.remove(InventorySupport.duplicateKey(existing.getBrand(), existing.getModel()));
             if (logger != null) {
                 logger.log("SELLER", "DELETE_CAR", "id=" + id + " (" + existing.getBrand() + " " + existing.getModel() + ")");
             }
@@ -161,13 +173,14 @@ public class InventoryService {
         synchronized (lock) {
             int id = car.getId();
             Car existing = index.get(id);
-            if (existing != null) {
-                duplicateGuard.remove(makeDuplicateKey(existing.getBrand(), existing.getModel()));
-            }
+            InventorySupport.checkRestorePermitted(car, existing, duplicateGuard);
             repository.save(car);
-            replaceInList(car);
+            if (existing != null) {
+                duplicateGuard.remove(InventorySupport.duplicateKey(existing.getBrand(), existing.getModel()));
+            }
+            InventorySupport.replaceInList(cars, car);
             index.put(id, car.copy());
-            duplicateGuard.add(makeDuplicateKey(car.getBrand(), car.getModel()));
+            duplicateGuard.add(InventorySupport.duplicateKey(car.getBrand(), car.getModel()));
             if (logger != null) {
                 logger.log("SYSTEM", "RESTORE_CAR", "Restored Car #" + id + " via Undo");
             }
@@ -178,30 +191,50 @@ public class InventoryService {
     public void removeCarInternal(int id) throws RepositoryException {
         synchronized (lock) {
             Car existing = index.get(id);
-            if (existing != null) {
-                repository.deleteById(id);
-                cars.removeIf(c -> c.getId() == id);
-                index.remove(id);
-                duplicateGuard.remove(makeDuplicateKey(existing.getBrand(), existing.getModel()));
-                if (logger != null) {
-                    logger.log("SYSTEM", "REMOVE_CAR_UNDO", "Removed Car #" + id + " via Undo");
-                }
+            if (existing == null) {
+                throw new RepositoryException("Cannot undo addition: car #" + id + " no longer exists.");
+            }
+            repository.deleteById(id);
+            cars.removeIf(c -> c.getId() == id);
+            index.remove(id);
+            duplicateGuard.remove(InventorySupport.duplicateKey(existing.getBrand(), existing.getModel()));
+            if (logger != null) {
+                logger.log("SYSTEM", "REMOVE_CAR_UNDO", "Removed Car #" + id + " via Undo");
             }
         }
     }
 
     /** Updates vehicle status (e.g. from AVAILABLE to RESERVED or SOLD). */
-    public void updateCarStatus(int id, Status newStatus) throws RepositoryException, CarNotFoundException {
+    public void updateCarStatus(int id, Status newStatus)
+            throws RepositoryException, CarNotFoundException, CarNotAvailableException {
         synchronized (lock) {
             Car existing = index.get(id);
             if (existing == null) throw new CarNotFoundException(id);
-            Car updated = new Car(existing.getId(), existing.getBrand(), existing.getModel(),
-                    existing.getPrice(), existing.getTopSpeed(), existing.getFuelType(),
-                    existing.getHorsepower(), existing.getAcceleration(), newStatus);
-            repository.save(updated);
-            replaceInList(updated);
-            index.put(id, updated.copy());
+            if (existing.getStatus() == Status.SOLD && newStatus != Status.SOLD) {
+                throw new CarNotAvailableException(id,
+                        "Vehicle is SOLD; terminal state transition to " + newStatus + " is impossible.");
+            }
+            applyCarStatus(existing, newStatus);
         }
+    }
+
+    /** Reverts vehicle status during transactional rollback (bypasses terminal SOLD check). */
+    public void revertCarStatus(int id, Status targetStatus)
+            throws RepositoryException, CarNotFoundException {
+        synchronized (lock) {
+            Car existing = index.get(id);
+            if (existing == null) throw new CarNotFoundException(id);
+            applyCarStatus(existing, targetStatus);
+        }
+    }
+
+    private void applyCarStatus(Car existing, Status status) throws RepositoryException {
+        Car updated = new Car(existing.getId(), existing.getBrand(), existing.getModel(),
+                existing.getPrice(), existing.getTopSpeed(), existing.getFuelType(),
+                existing.getHorsepower(), existing.getAcceleration(), status);
+        repository.save(updated);
+        InventorySupport.replaceInList(cars, updated);
+        index.put(existing.getId(), updated.copy());
     }
     /** Returns the intrinsic monitor lock for coordinated locking with SalesService (L13). */
     public Object getLock() { return lock; }
@@ -215,7 +248,6 @@ public class InventoryService {
             return Collections.unmodifiableList(copy);
         }
     }
-    /** Finds a car by ID in O(1) time. */
     public Car findById(int id) throws CarNotFoundException {
         synchronized (lock) {
             Car c = index.get(id);
@@ -228,18 +260,14 @@ public class InventoryService {
         synchronized (lock) { return index.containsKey(id); }
     }
 
-    /** Returns a sorted set of distinct brand names (L5 TreeSet). */
     public Set<String> getBrandsSorted() {
-        synchronized (lock) {
-            return InventorySupport.getBrandsSorted(cars);
-        }
+        synchronized (lock) { return InventorySupport.getBrandsSorted(cars); }
     }
 
     public int count() {
         synchronized (lock) { return cars.size(); }
     }
 
-    /** Persists a point-in-time snapshot of the inventory to underlying storage. */
     public void saveSnapshot() throws RepositoryException {
         synchronized (lock) {
             repository.saveAll(findAll());
@@ -250,26 +278,14 @@ public class InventoryService {
     }
 
     public int countAvailable() {
-        synchronized (lock) {
-            return InventorySupport.countAvailable(cars);
-        }
+        synchronized (lock) { return InventorySupport.countAvailable(cars); }
     }
 
-    /** Computes stock value over AVAILABLE cars only (fixes C prototype defect, ADR-009). */
     public double calculateTotalStockValue() {
-        synchronized (lock) {
-            return InventorySupport.availableStockValue(cars);
-        }
+        synchronized (lock) { return InventorySupport.availableStockValue(cars); }
     }
 
-    /** Computes total portfolio value across all cars including sold. */
     public double calculateTotalPortfolioValue() {
-        synchronized (lock) {
-            return InventorySupport.portfolioValue(cars);
-        }
-    }
-
-    private String makeDuplicateKey(String brand, String model) {
-        return InventorySupport.duplicateKey(brand, model);
+        synchronized (lock) { return InventorySupport.portfolioValue(cars); }
     }
 }

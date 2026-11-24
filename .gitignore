@@ -1,31 +1,28 @@
-# Build output
+# Java build output
 out/
 build/
 *.class
 
-# Database
-*.db
-
-# Backups (runtime generated)
+# Runtime application data (keep seed and sample resources tracked)
+data/cars.csv
+data/sales.csv
+data/*.db
 data/backups/
+data/exports/
+data/reports/
+logs/
 
-# Logs (runtime generated)
-logs/*.log
+# Temporary and recovery files
+*.tmp
+*.bak
+*.restore.tmp
+*.restore.bak
 
-# Course materials / handouts (keep private)
-reference/course/
-
-# IDE folders
+# IDE and operating-system files
 .idea/
 *.iml
 .vscode/
-.project
-.classpath
-.settings/
-*.swp
-*~
-
-# OS / Office temporary files
-Thumbs.db
 .DS_Store
+Thumbs.db
 ~$*
+*.swp

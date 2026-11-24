@@ -4,6 +4,7 @@ import com.revline.util.exception.DataFormatException;
 import com.revline.util.exception.InvalidCarException;
 
 import java.time.LocalDate;
+import java.util.Locale;
 
 /**
  * Immutable transaction record representing a completed car sale.
@@ -70,7 +71,7 @@ public class Sale {
     }
 
     public String toCsv() {
-        return String.format("%d,%d,%s,%s,%s,%.2f",
+        return String.format(Locale.US, "%d,%d,%s,%s,%s,%.2f",
                 saleId, carId, buyerName, sellerName, saleDate.toString(), price);
     }
 

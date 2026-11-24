@@ -39,17 +39,16 @@ public class SearchService {
     }
 
     // =========================================================================
-    // STUDENT EXERCISE EX-3 ZONE
+    // Multi-Field Search Implementation (L2, L5)
     // =========================================================================
 
     /**
-     * EX-3: Case-insensitive multi-field search across brand, model, and fuel type.
+     * Case-insensitive multi-field search across brand, model, and fuel type.
      * Splits query on whitespace into tokens; every token must match within
      * (brand + " " + model + " " + fuelType).
      *
      * @param query search text (e.g. "ferrari hybrid" or "porsche")
      * @return list of matching vehicles (empty if no matches)
-     * @see docs/learning/EX3_HINT.md
      */
     public List<Car> search(String query) {
         if (query == null || query.trim().isEmpty()) {

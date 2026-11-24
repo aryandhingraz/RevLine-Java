@@ -117,11 +117,11 @@ public class UndoManager {
     }
 
     // =========================================================================
-    // STUDENT EXERCISE EX-7 ZONE
+    // Undo Mutation Execution (L6-7)
     // =========================================================================
 
     /**
-     * EX-7: Pops the most recent action and reverses its effect on inventory (L6-7 Deque).
+     * Pops the most recent action and reverses its effect on inventory (L6-7 Deque).
      *
      * Behavior:
      * 1. If canUndo() is false, throw RevLineException("No actions available to undo.").
@@ -136,7 +136,6 @@ public class UndoManager {
      * @param inventoryService target inventory service to apply the reversal on
      * @return description of the action that was undone
      * @throws RevLineException if stack is empty or undo operation fails
-     * @see docs/learning/EX7_HINT.md
      */
     public synchronized String undo(InventoryService inventoryService) throws RevLineException {
         if (!canUndo()) {
@@ -146,23 +145,34 @@ public class UndoManager {
             throw new RevLineException("InventoryService cannot be null.");
         }
 
-        UndoAction action = stack.pop();
+        UndoAction action = stack.peek();
         Car snapshot = action.getSnapshot();
-        switch (action.getType()) {
-            case ADD:
-                if (snapshot != null) {
-                    inventoryService.removeCarInternal(snapshot.getId());
-                }
-                break;
-            case DELETE:
-            case UPDATE:
-                if (snapshot != null) {
-                    inventoryService.restoreCar(snapshot);
-                }
-                break;
-            default:
-                throw new RevLineException("Unknown action type: " + action.getType());
+        if (snapshot == null) {
+            throw new RevLineException("Undo action has no saved vehicle snapshot. The action was retained.");
         }
+        try {
+            switch (action.getType()) {
+                case ADD:
+                    if (snapshot != null) {
+                        inventoryService.removeCarInternal(snapshot.getId());
+                    }
+                    break;
+                case DELETE:
+                case UPDATE:
+                    if (snapshot != null) {
+                        inventoryService.restoreCar(snapshot);
+                    }
+                    break;
+                default:
+                    throw new RevLineException("Unknown action type: " + action.getType());
+            }
+        } catch (RevLineException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RevLineException("Undo failed. The action remains available to retry: "
+                    + e.getMessage(), e);
+        }
+        stack.pop();
         return "Undone: " + action.getDescription();
     }
 }

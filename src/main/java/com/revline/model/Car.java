@@ -3,6 +3,8 @@ package com.revline.model;
 import com.revline.util.exception.DataFormatException;
 import com.revline.util.exception.InvalidCarException;
 
+import java.util.Locale;
+
 /**
  * Concrete Car entity representing a showroom vehicle.
  * Implements Comparable for natural ID sorting (L8).
@@ -105,6 +107,9 @@ public class Car extends Vehicle implements Comparable<Car> {
         if (status == null) {
             throw new InvalidCarException("Status cannot be null.");
         }
+        if (this.status == Status.SOLD && status != Status.SOLD) {
+            throw new IllegalStateException("Cannot change status of a SOLD car. Terminal state is immutable.");
+        }
         this.status = status;
     }
 
@@ -148,7 +153,7 @@ public class Car extends Vehicle implements Comparable<Car> {
      * Serializes this Car to a single standard CSV row.
      */
     public String toCsv() {
-        return String.format("%d,%s,%s,%.2f,%d,%s,%d,%.2f,%s",
+        return String.format(Locale.US, "%d,%s,%s,%.2f,%d,%s,%d,%.2f,%s",
                 id, brand, model, price, topSpeed, fuelType.name(), horsepower, acceleration, status.name());
     }
 
@@ -182,8 +187,8 @@ public class Car extends Vehicle implements Comparable<Car> {
             return new Car(id, brand, model, price, topSpeed, fuelType, horsepower, acceleration, status);
         } catch (NumberFormatException e) {
             throw new DataFormatException("Numeric parse error: " + e.getMessage(), lineNumber, e);
-        } catch (IllegalArgumentException e) {
-            throw new DataFormatException("Illegal argument: " + e.getMessage(), lineNumber, e);
+        } catch (IllegalArgumentException | InvalidCarException e) {
+            throw new DataFormatException("Validation error: " + e.getMessage(), lineNumber, e);
         }
     }
 }

@@ -39,31 +39,32 @@ public class SalesProcessor implements Runnable {
                 if (request == null) {
                     break;
                 }
-                try {
-                    Sale sale = salesService.sellCar(request.getCarId(), request.getBuyerName(), request.getSellerName());
-                    processedSales.add(sale);
-                    if (logger != null) {
-                        logger.log("SALES_PROCESSOR", "PROCESSED",
-                                String.format("[%s] Successfully executed Sale #%d for Car #%d",
-                                        Thread.currentThread().getName(), sale.getSaleId(), request.getCarId()));
-                    }
-                } catch (RevLineException e) {
-                    processingErrors.add("Request #" + request.getRequestId() + " failed: " + e.getMessage());
-                    if (logger != null) {
-                        logger.log("SALES_PROCESSOR", "FAILED",
-                                String.format("[%s] Request #%d rejected: %s",
-                                        Thread.currentThread().getName(), request.getRequestId(), e.getMessage()));
-                    }
-                }
+                processRequest(request);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 break;
-            } catch (UnsupportedOperationException e) {
-                // EX-8 pending implementation by student
-                break;
-            } catch (Throwable t) {
-                processingErrors.add("Unexpected consumer error: " + t.getMessage());
-                break;
+            } catch (RuntimeException e) {
+                processingErrors.add("Consumer error: " + e.getMessage());
+                // Log and continue — do not kill the consumer loop on recoverable errors
+            }
+        }
+    }
+
+    private void processRequest(PurchaseRequest request) {
+        try {
+            Sale sale = salesService.sellCar(request.getCarId(), request.getBuyerName(), request.getSellerName());
+            processedSales.add(sale);
+            if (logger != null) {
+                logger.log("SALES_PROCESSOR", "PROCESSED",
+                        String.format("[%s] Successfully executed Sale #%d for Car #%d",
+                                Thread.currentThread().getName(), sale.getSaleId(), request.getCarId()));
+            }
+        } catch (RevLineException e) {
+            processingErrors.add("Request #" + request.getRequestId() + " failed: " + e.getMessage());
+            if (logger != null) {
+                logger.log("SALES_PROCESSOR", "FAILED",
+                        String.format("[%s] Request #%d rejected: %s",
+                                Thread.currentThread().getName(), request.getRequestId(), e.getMessage()));
             }
         }
     }

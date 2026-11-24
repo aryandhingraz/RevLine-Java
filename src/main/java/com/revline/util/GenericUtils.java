@@ -41,15 +41,16 @@ public final class GenericUtils {
 
     /**
      * Displays descriptions for vehicles using an upper-bounded wildcard (L24 Wildcards).
-     * Demonstrates read-only access to sub-types of Vehicle.
+     * Demonstrates read-only access to sub-types of Vehicle by writing to the provided PrintStream.
      *
      * @param vehicles list of objects extending Vehicle
+     * @param out target output destination
      */
-    public static void printAll(List<? extends Vehicle> vehicles) {
-        if (vehicles == null) return;
+    public static void printAll(List<? extends Vehicle> vehicles, java.io.PrintStream out) {
+        if (vehicles == null || out == null) return;
         for (Vehicle v : vehicles) {
             if (v != null) {
-                System.out.println(v.describe());
+                out.println(v.describe());
             }
         }
     }
@@ -84,5 +85,17 @@ public final class GenericUtils {
             }
         }
         return ladder;
+    }
+
+    /**
+     * Preserves insertion order while eliminating duplicates using LinkedHashSet (L5, L24).
+     *
+     * @param list input list
+     * @param <T>  element type
+     * @return distinct list preserving first-seen insertion order
+     */
+    public static <T> List<T> uniquePreservingOrder(List<T> list) {
+        if (list == null) return Collections.emptyList();
+        return new ArrayList<>(new java.util.LinkedHashSet<>(list));
     }
 }

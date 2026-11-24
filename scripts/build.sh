@@ -17,7 +17,7 @@ rm -rf out/main
 mkdir -p out/main
 
 echo "Compiling sources (Java 17 target)..."
-javac --release 17 -Xlint:all -encoding UTF-8 -d out/main -cp "lib/*" -sourcepath src/main/java $SOURCES
+javac --release 17 -Xlint:all -Werror -encoding UTF-8 -d out/main -cp "lib/*" -sourcepath src/main/java $SOURCES
 
 if [ $? -ne 0 ]; then
     echo "[FAIL] Compilation failed."

@@ -13,5 +13,5 @@ if not exist out\main\com\revline\app\RevLineApp.class (
     if %ERRORLEVEL% NEQ 0 exit /b 1
 )
 
-java -cp "out\main;lib\*" com.revline.app.RevLineApp
+java -cp "out\main;lib\*" com.revline.app.RevLineApp %*
 exit /b %ERRORLEVEL%

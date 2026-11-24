@@ -6,6 +6,7 @@ import com.revline.model.Status;
 import com.revline.repository.CarRepository;
 import com.revline.util.AppLogger;
 import com.revline.util.FileUtil;
+import com.revline.util.TimeUtil;
 import com.revline.util.Validator;
 import com.revline.util.exception.InvalidCarException;
 import com.revline.util.exception.RepositoryException;
@@ -13,15 +14,15 @@ import com.revline.util.exception.RevLineException;
 
 import java.io.File;
 import java.io.BufferedReader;
-import java.io.FileReader;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 /**
- * Enterprise Data Tools for file handling, migrations, batch scripts, and byte-stream backups (L25–L27).
+ * Application Data Tools for file handling, migrations, batch scripts, and byte-stream backups (L25–L27).
  */
 public class DataToolsService {
 
@@ -96,57 +97,74 @@ public class DataToolsService {
         if (csvFile == null || !csvFile.exists()) {
             throw new IllegalArgumentException("CSV file does not exist: " + csvFile);
         }
-        int success = 0;
-        int rejected = 0;
+        int[] counts = new int[2]; // [0] = success, [1] = rejected
         List<String> errorLines = new ArrayList<>();
 
-        try (BufferedReader br = new BufferedReader(new FileReader(csvFile))) {
-            String line;
-            int lineNumber = 0;
-            while ((line = br.readLine()) != null) {
-                lineNumber++;
-                String trimmed = line.trim();
-                if (trimmed.isEmpty()) continue;
-                if (lineNumber == 1 && (trimmed.toLowerCase().startsWith("brand") || trimmed.toLowerCase().startsWith("id"))) {
-                    continue;
-                }
-                String[] parts = trimmed.split(",", -1);
-                if (parts.length < 8) {
-                    rejected++;
-                    errorLines.add(String.format("Line %3d: Rejected -> Expected >= 8 columns, found %d: [%s]", lineNumber, parts.length, trimmed));
-                    continue;
-                }
-                try {
-                    int offset = (parts.length >= 9) ? 1 : 0;
-                    String brand = parts[offset].trim();
-                    String model = parts[offset + 1].trim();
-                    double price = Double.parseDouble(parts[offset + 2].trim());
-                    int topSpeed = Integer.parseInt(parts[offset + 3].trim());
-                    FuelType fuelType = FuelType.fromString(parts[offset + 4].trim());
-                    int horsepower = Integer.parseInt(parts[offset + 5].trim());
-                    double acceleration = Double.parseDouble(parts[offset + 6].trim());
-                    Status status = Status.fromString(parts[offset + 7].trim());
-                    Car car = new Car(1, brand, model, price, topSpeed, fuelType, horsepower, acceleration, status);
-                    if (inventoryService != null) { inventoryService.addCar(car); }
-                    success++;
-                } catch (NumberFormatException | InvalidCarException e) {
-                    rejected++;
-                    errorLines.add(String.format("Line %3d: Rejected (%s) -> [%s]", lineNumber, e.getMessage(), trimmed));
-                } catch (Exception genericErr) {
-                    rejected++;
-                    errorLines.add(String.format("Line %3d: Rejected -> %s: [%s]", lineNumber, genericErr.getMessage(), trimmed));
-                }
-            }
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(csvFile), StandardCharsets.UTF_8))) {
+            readAndProcessCsvLines(br, inventoryService, counts, errorLines);
         }
 
-        File reportFile = writeErrorReport(csvFile, errorDir, success, rejected, errorLines);
-        return new CsvImportResult(success, rejected, reportFile);
+        File reportFile = writeErrorReport(csvFile, errorDir, counts[0], counts[1], errorLines);
+        return new CsvImportResult(counts[0], counts[1], reportFile);
+    }
+
+    private void readAndProcessCsvLines(BufferedReader br, InventoryService inventoryService,
+                                        int[] counts, List<String> errorLines) throws IOException {
+        String line;
+        int lineNumber = 0;
+        while ((line = br.readLine()) != null) {
+            lineNumber++;
+            String trimmed = line.trim();
+            if (trimmed.isEmpty() || isCsvHeader(trimmed, lineNumber)) continue;
+            processCsvRow(trimmed, lineNumber, inventoryService, counts, errorLines);
+        }
+    }
+
+    private void processCsvRow(String trimmed, int lineNumber, InventoryService inventoryService,
+                               int[] counts, List<String> errorLines) {
+        String[] parts = trimmed.split(",", -1);
+        if (parts.length < 8) {
+            counts[1]++;
+            errorLines.add(String.format("Line %3d: Rejected -> Expected >= 8 columns, found %d: [%s]",
+                    lineNumber, parts.length, trimmed));
+            return;
+        }
+        try {
+            Car car = parseCarRow(parts);
+            if (inventoryService != null) {
+                inventoryService.addCar(car);
+            }
+            counts[0]++;
+        } catch (NumberFormatException | InvalidCarException e) {
+            counts[1]++;
+            errorLines.add(String.format("Line %3d: Rejected (%s) -> [%s]", lineNumber, e.getMessage(), trimmed));
+        } catch (Exception genericErr) {
+            counts[1]++;
+            errorLines.add(String.format("Line %3d: Rejected -> %s: [%s]", lineNumber, genericErr.getMessage(), trimmed));
+        }
+    }
+
+    private boolean isCsvHeader(String trimmed, int lineNumber) {
+        return lineNumber == 1 && (trimmed.toLowerCase().startsWith("brand") || trimmed.toLowerCase().startsWith("id"));
+    }
+
+    private Car parseCarRow(String[] parts) throws InvalidCarException, NumberFormatException {
+        int offset = (parts.length >= 9) ? 1 : 0;
+        String brand = parts[offset].trim();
+        String model = parts[offset + 1].trim();
+        double price = Double.parseDouble(parts[offset + 2].trim());
+        int topSpeed = Integer.parseInt(parts[offset + 3].trim());
+        FuelType fuelType = FuelType.fromString(parts[offset + 4].trim());
+        int horsepower = Integer.parseInt(parts[offset + 5].trim());
+        double acceleration = Double.parseDouble(parts[offset + 6].trim());
+        Status status = Status.fromString(parts[offset + 7].trim());
+        return new Car(1, brand, model, price, topSpeed, fuelType, horsepower, acceleration, status);
     }
 
     private File writeErrorReport(File csvFile, File errorDir, int success, int rejected, List<String> errorLines) {
         if (errorLines.isEmpty() || errorDir == null) return null;
         if (!errorDir.exists()) errorDir.mkdirs();
-        String ts = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String ts = TimeUtil.fileTimestamp();
         File report = new File(errorDir, "import_errors_" + ts + ".txt");
         List<String> content = new ArrayList<>();
         content.add("==========================================================================");
@@ -157,7 +175,11 @@ public class DataToolsService {
         content.add("--------------------------------------------------------------------------");
         content.addAll(errorLines);
         content.add("==========================================================================");
-        try { FileUtil.safeWrite(report, content); } catch (RepositoryException ignored) {}
+        try {
+            FileUtil.safeWrite(report, content);
+        } catch (RepositoryException e) {
+            AppLogger.getInstance().log("SYSTEM", "REPORT_WRITE_ERR", "Failed to write error report: " + e.getMessage());
+        }
         return report;
     }
 
@@ -236,14 +258,4 @@ public class DataToolsService {
         return allCars.size();
     }
 
-    // =========================================================================
-    // 6. SYNTHETIC SUPERCAR DATA GENERATOR (L4)
-    // =========================================================================
-
-    /**
-     * Generates realistic synthetic supercar data for benchmarking and stress testing.
-     */
-    public List<Car> generateSyntheticCars(int count) {
-        return SyntheticDataGenerator.generate(count);
-    }
 }

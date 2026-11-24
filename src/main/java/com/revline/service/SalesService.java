@@ -4,6 +4,7 @@ import com.revline.model.Car;
 import com.revline.model.Reservation;
 import com.revline.model.Sale;
 import com.revline.model.Status;
+import com.revline.repository.FileSaleRepository;
 import com.revline.repository.SaleRepository;
 import com.revline.util.AppLogger;
 import com.revline.util.Validator;
@@ -17,6 +18,9 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 
 /**
  * Orchestrates showroom sales transactions and reservation lifecycles.
@@ -30,8 +34,9 @@ public class SalesService {
     private final WaitlistService waitlistService;
     private final AppLogger logger;
 
-    // Shared monitor lock with InventoryService (MASTER_PROMPT line 665)
+    // Shared monitor lock with InventoryService for cross-service thread coordination (L13, L14)
     private final Object lock;
+    private final Set<Integer> pendingExpiredIds = new HashSet<>();
 
     public SalesService(InventoryService inventoryService,
                         SaleRepository saleRepository,
@@ -52,14 +57,14 @@ public class SalesService {
     }
 
     /**
-     * Executes an atomic car sale transaction.
-     *
-     * Rules:
-     * - Car must exist in inventory.
-     * - Car must not already be SOLD.
-     * - If car is RESERVED, it can only be purchased by the reserving buyer (unless expired).
-     * - On success: status moves to SOLD, Sale record persisted, active reservations removed.
-     * - On persistence failure: status rolls back to prior state.
+     * Executes a vehicle sale transaction following strict consistency rules (L13, L14, L19, L20):
+     * Step 1: Validate input parameters
+     * Step 2: Find vehicle and purge expired reservations
+     * Step 3: Verify car availability (must not be sold; if reserved, buyer must match)
+     * Step 4: Persist sale to repository (transaction in JDBC, safe write in CSV)
+     * Step 5: Update in-memory status with rollback protection on storage failure
+     * Step 6: Clean up active reservation and waitlist entries
+     * Step 7: Record audit event in logger
      *
      * @param carId identifier of vehicle to purchase
      * @param buyerName name of customer purchasing the vehicle
@@ -67,60 +72,76 @@ public class SalesService {
      * @return recorded Sale transaction
      */
     public Sale sellCar(int carId, String buyerName, String sellerName) throws RevLineException {
+        // Step 1: Validate input parameters
         Validator.requireNonBlank(buyerName, "Buyer Name");
         Validator.requireNonBlank(sellerName, "Seller Name");
 
         synchronized (lock) {
+            // Step 2: Release expired holds and restore their vehicle states.
+            purgeExpiredReservations();
             Car car = inventoryService.findById(carId);
 
-            // Clean any stale holds
-            reservationManager.purgeExpired();
-
-            if (car.getStatus() == Status.SOLD) {
-                throw new CarNotAvailableException(carId, "Car #" + carId + " is already SOLD.");
-            }
-
-            if (car.getStatus() == Status.RESERVED) {
-                Reservation activeRes = reservationManager.getReservation(carId);
-                if (activeRes != null && !activeRes.getBuyerName().equalsIgnoreCase(buyerName.trim())) {
-                    throw new CarNotAvailableException(carId,
-                            "Car #" + carId + " is currently RESERVED by " + activeRes.getBuyerName()
-                                    + " until " + activeRes.getExpiresAt());
-                }
-            }
+            // Step 3: Verify state and reservation ownership
+            validateCarAvailability(car, carId, buyerName);
 
             Status previousStatus = car.getStatus();
             int nextSaleId = saleRepository.nextId();
             Sale sale = new Sale(nextSaleId, carId, buyerName.trim(), sellerName.trim(), LocalDate.now(), car.getPrice());
 
-            // Atomic state transition with rollback guarantee
-            try {
-                if (saleRepository instanceof com.revline.repository.JdbcSaleRepository) {
-                    ((com.revline.repository.JdbcSaleRepository) saleRepository).recordSaleAtomic(sale, car);
-                    inventoryService.updateCarStatus(carId, Status.SOLD);
-                } else {
-                    inventoryService.updateCarStatus(carId, Status.SOLD);
-                    saleRepository.save(sale);
-                }
-            } catch (RepositoryException e) {
-                // Rollback in-memory status
-                try {
-                    inventoryService.updateCarStatus(carId, previousStatus);
-                } catch (Exception ignored) {}
-                throw new RepositoryException("Failed to persist sale transaction. Rollback applied.", e);
-            }
+            // Step 4 & 5: Persist sale with rollback protection
+            persistSaleWithRollback(sale, car, previousStatus);
 
-            // Cleanup reservation & waitlist on sale completion
+            // Step 6: Clean up reservation and waitlist
             reservationManager.remove(carId);
             waitlistService.clear(carId);
 
-            if (logger != null) {
-                logger.log("SALES", "SELL_CAR", String.format("Sale #%d: Car #%d (%s %s) sold to '%s' by '%s' for $%,.2f",
-                        sale.getSaleId(), car.getId(), car.getBrand(), car.getModel(),
-                        sale.getBuyerName(), sale.getSellerName(), sale.getPrice()));
-            }
+            // Step 7: Record audit log
+            logSale(sale, car);
 
             return sale;
+        }
+    }
+
+    private void validateCarAvailability(Car car, int carId, String buyerName) throws CarNotAvailableException {
+        if (car.getStatus() == Status.SOLD) {
+            throw new CarNotAvailableException(carId, "Car #" + carId + " is already SOLD.");
+        }
+
+        if (car.getStatus() == Status.RESERVED) {
+            Reservation activeRes = reservationManager.getReservation(carId);
+            if (activeRes != null && !activeRes.getBuyerName().equalsIgnoreCase(buyerName.trim())) {
+                throw new CarNotAvailableException(carId,
+                        "Car #" + carId + " is currently RESERVED by " + activeRes.getBuyerName()
+                                + " until " + activeRes.getExpiresAt());
+            }
+        }
+    }
+
+    private void persistSaleWithRollback(Sale sale, Car car, Status previousStatus)
+            throws RepositoryException, CarNotFoundException, CarNotAvailableException {
+        int carId = car.getId();
+        try {
+            inventoryService.updateCarStatus(carId, Status.SOLD);
+            saleRepository.recordSale(sale, car);
+        } catch (RepositoryException e) {
+            try {
+                inventoryService.revertCarStatus(carId, previousStatus);
+            } catch (RepositoryException | CarNotFoundException rollbackEx) {
+                if (logger != null) {
+                    logger.log("SALES", "ROLLBACK_FAILED",
+                            "Failed to revert car #" + carId + " status: " + rollbackEx.getMessage());
+                }
+                e.addSuppressed(rollbackEx);
+            }
+            throw new RepositoryException("Failed to persist sale transaction. Rollback applied.", e);
+        }
+    }
+
+    private void logSale(Sale sale, Car car) {
+        if (logger != null) {
+            logger.log("SALES", "SELL_CAR", String.format("Sale #%d: Car #%d (%s %s) sold to '%s' by '%s' for $%,.2f",
+                    sale.getSaleId(), car.getId(), car.getBrand(), car.getModel(),
+                    sale.getBuyerName(), sale.getSellerName(), sale.getPrice()));
         }
     }
 
@@ -136,22 +157,30 @@ public class SalesService {
         Validator.requireNonBlank(buyerName, "Buyer Name");
 
         synchronized (lock) {
+            // Expired reservations must also restore the persisted vehicle status.
+            purgeExpiredReservations();
             Car car = inventoryService.findById(carId);
-
-            reservationManager.purgeExpired();
 
             if (car.getStatus() == Status.SOLD) {
                 throw new CarNotAvailableException(carId, "Cannot reserve Car #" + carId + " because it is already SOLD.");
             }
             if (car.getStatus() == Status.RESERVED) {
                 Reservation existing = reservationManager.getReservation(carId);
-                if (existing != null) {
-                    throw new CarNotAvailableException(carId, "Car #" + carId + " is already reserved by " + existing.getBuyerName());
-                }
+                String msg = existing != null
+                        ? "Car #" + carId + " is already reserved by " + existing.getBuyerName()
+                        : "Car #" + carId + " is already reserved.";
+                throw new CarNotAvailableException(carId, msg);
             }
 
-            inventoryService.updateCarStatus(carId, Status.RESERVED);
+            // Create the in-memory hold first so invalid duration/details cannot
+            // leave a vehicle marked RESERVED without a matching reservation.
             Reservation res = reservationManager.reserve(carId, buyerName, durationMinutes);
+            try {
+                inventoryService.updateCarStatus(carId, Status.RESERVED);
+            } catch (RepositoryException | CarNotFoundException | CarNotAvailableException e) {
+                reservationManager.remove(carId);
+                throw e;
+            }
 
             if (logger != null) {
                 logger.log("SALES", "RESERVE_CAR", String.format("Car #%d reserved for '%s' for %d min",
@@ -167,6 +196,7 @@ public class SalesService {
      */
     public void cancelReservation(int carId, String buyerName) throws RevLineException {
         synchronized (lock) {
+            purgeExpiredReservations();
             Car car = inventoryService.findById(carId);
 
             reservationManager.cancel(carId, buyerName);
@@ -188,19 +218,37 @@ public class SalesService {
      */
     public List<Integer> purgeExpiredReservations() {
         synchronized (lock) {
-            List<Integer> expiredIds = reservationManager.purgeExpired();
-            for (int id : expiredIds) {
+            List<Integer> newlyExpiredIds = reservationManager.purgeExpired();
+            pendingExpiredIds.addAll(newlyExpiredIds);
+
+            Iterator<Integer> iterator = pendingExpiredIds.iterator();
+            while (iterator.hasNext()) {
+                int id = iterator.next();
                 try {
                     Car car = inventoryService.findById(id);
                     if (car.getStatus() == Status.RESERVED) {
                         inventoryService.updateCarStatus(id, Status.AVAILABLE);
                         if (logger != null) {
-                            logger.log("SYSTEM", "EXPIRE_HOLD", "Reservation expired for Car #" + id + "; returned to AVAILABLE");
+                            logger.log("SYSTEM", "EXPIRE_HOLD",
+                                    "Reservation expired for Car #" + id + "; returned to AVAILABLE");
                         }
                     }
-                } catch (Exception ignored) {}
+                    iterator.remove();
+                } catch (CarNotFoundException | CarNotAvailableException e) {
+                    if (logger != null) {
+                        logger.log("SYSTEM", "EXPIRE_HOLD_WARN",
+                                "Car #" + id + " unavailable during expiry cleanup: " + e.getMessage());
+                    }
+                    iterator.remove();
+                } catch (RepositoryException e) {
+                    // Keep the ID pending so a later cleanup cycle can retry the persisted status update.
+                    if (logger != null) {
+                        logger.log("SYSTEM", "EXPIRE_HOLD_ERR",
+                                "Failed to update car #" + id + "; will retry: " + e.getMessage());
+                    }
+                }
             }
-            return expiredIds;
+            return newlyExpiredIds;
         }
     }
 
@@ -216,6 +264,15 @@ public class SalesService {
         return saleRepository.findByCarId(carId);
     }
 
+    /**
+     * Reloads sales data from storage if using file-backed repository.
+     */
+    public void reload() throws RepositoryException {
+        if (saleRepository instanceof FileSaleRepository) {
+            ((FileSaleRepository) saleRepository).load();
+        }
+    }
+
     public ReservationManager getReservationManager() {
         return reservationManager;
     }
@@ -228,33 +285,6 @@ public class SalesService {
      * Generates a formal ASCII receipt for a completed sale transaction.
      */
     public String generateReceipt(Sale sale, Car car) {
-        if (sale == null) return "";
-        String brandModel = (car != null) ? (car.getBrand() + " " + car.getModel()) : ("Car #" + sale.getCarId());
-        String engineInfo = (car != null) ? (car.getHorsepower() + " HP | " + car.getTopSpeed() + " km/h") : "N/A";
-        String fuelInfo = (car != null) ? car.getFuelType().name() : "N/A";
-
-        StringBuilder sb = new StringBuilder();
-        sb.append("=======================================================").append(System.lineSeparator());
-        sb.append("                   REVLINE SHOWROOM                    ").append(System.lineSeparator());
-        sb.append("                OFFICIAL SALES RECEIPT                 ").append(System.lineSeparator());
-        sb.append("=======================================================").append(System.lineSeparator());
-        sb.append(String.format("  Receipt No   : REC-%04d-%04d%n", sale.getSaleDate().getYear(), sale.getSaleId()));
-        sb.append(String.format("  Sale ID      : #%d%n", sale.getSaleId()));
-        sb.append(String.format("  Date         : %s%n", sale.getSaleDate()));
-        sb.append(String.format("  Buyer        : %s%n", sale.getBuyerName()));
-        sb.append(String.format("  Seller       : %s%n", sale.getSellerName()));
-        sb.append("-------------------------------------------------------").append(System.lineSeparator());
-        sb.append(String.format("  Vehicle ID   : #%d%n", sale.getCarId()));
-        sb.append(String.format("  Vehicle      : %s%n", brandModel));
-        sb.append(String.format("  Specs        : %s%n", engineInfo));
-        sb.append(String.format("  Fuel Type    : %s%n", fuelInfo));
-        sb.append("-------------------------------------------------------").append(System.lineSeparator());
-        sb.append(String.format("  Selling Price: $%,.2f%n", sale.getPrice()));
-        sb.append("  Taxes & Fees : INCLUDED").append(System.lineSeparator());
-        sb.append(String.format("  TOTAL PAID   : $%,.2f%n", sale.getPrice()));
-        sb.append("=======================================================").append(System.lineSeparator());
-        sb.append("            THANK YOU FOR CHOOSING REVLINE!            ").append(System.lineSeparator());
-        sb.append("=======================================================").append(System.lineSeparator());
-        return sb.toString();
+        return SalesReceiptFormatter.format(sale, car);
     }
 }

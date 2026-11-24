@@ -11,6 +11,7 @@ import com.revline.service.SearchService;
 import com.revline.ui.InputReader;
 import com.revline.ui.MenuPrinter;
 import com.revline.util.AppLogger;
+import com.revline.util.exception.InputClosedException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,6 +41,7 @@ public class MenuController {
                           RecentlyViewed recentlyViewed,
                           ReportService reportService,
                           DataToolsService dataToolsService,
+                          RevLineApp.StorageComponents storage,
                           AppLogger logger,
                           InputReader reader) {
         this.inventoryService = inventoryService;
@@ -51,44 +53,65 @@ public class MenuController {
                 comparisonService, recentlyViewed, reader);
         this.sellerHandler = new SellerMenuHandler(inventoryService, salesService, reader);
         this.reportsHandler = new ReportsMenuHandler(reportService, reader);
-        this.dataToolsHandler = new DataToolsMenuHandler(dataToolsService, inventoryService, salesService, reader);
+        this.dataToolsHandler = new DataToolsMenuHandler(dataToolsService, inventoryService, salesService, storage, reader);
+    }
+
+    public MenuController(InventoryService inventoryService,
+                          SearchService searchService,
+                          SalesService salesService,
+                          ComparisonService comparisonService,
+                          RecentlyViewed recentlyViewed,
+                          ReportService reportService,
+                          DataToolsService dataToolsService,
+                          AppLogger logger,
+                          InputReader reader) {
+        this(inventoryService, searchService, salesService, comparisonService,
+                recentlyViewed, reportService, dataToolsService, null, logger, reader);
     }
 
     /**
      * Main interactive event loop.
      */
     public void run() {
-        boolean running = true;
-        while (running) {
-            if (isSellerMode) {
-                MenuPrinter.printSellerView();
-                String cmd = reader.readCommand("   Select Seller Option [1-8, S, 0]: ");
-                if (cmd.equalsIgnoreCase("S")) {
-                    isSellerMode = false;
-                    System.out.println("\n  [✓] Switched to BUYER / CLIENT VIEW.");
-                    continue;
-                }
-                if (cmd.equals("0")) {
-                    running = false;
-                    break;
-                }
-                handleSellerCommand(cmd);
-            } else {
-                MenuPrinter.printBuyerView();
-                String cmd = reader.readCommand("   Select Buyer Option [1-8, S, 0]: ");
-                if (cmd.equalsIgnoreCase("S")) {
-                    isSellerMode = true;
-                    System.out.println("\n  [✓] Switched to SELLER / MANAGEMENT VIEW.");
-                    continue;
-                }
-                if (cmd.equals("0")) {
-                    running = false;
-                    break;
-                }
-                buyerHandler.handleCommand(cmd);
+        try {
+            boolean running = true;
+            while (running) {
+                running = isSellerMode ? processSellerTurn() : processBuyerTurn();
             }
+            System.out.println("\n  Exiting RevLine System... Thank you for driving passion. Goodbye!\n");
+        } catch (InputClosedException e) {
+            System.out.println("\n  Input closed. Thank you for driving passion. Goodbye!\n");
         }
-        System.out.println("\n  Exiting RevLine System... Thank you for driving passion. Goodbye!\n");
+    }
+
+    private boolean processSellerTurn() {
+        MenuPrinter.printSellerView();
+        String cmd = reader.readCommand("   Select Seller Option [1-9, A, S, 0]: ");
+        if (cmd.equalsIgnoreCase("S")) {
+            isSellerMode = false;
+            System.out.println("\n  [✓] Switched to BUYER / CLIENT VIEW.");
+            return true;
+        }
+        if (cmd.equals("0")) {
+            return false;
+        }
+        handleSellerCommand(cmd);
+        return true;
+    }
+
+    private boolean processBuyerTurn() {
+        MenuPrinter.printBuyerView();
+        String cmd = reader.readCommand("   Select Buyer Option [1-8, S, 0]: ");
+        if (cmd.equalsIgnoreCase("S")) {
+            isSellerMode = true;
+            System.out.println("\n  [✓] Switched to SELLER / MANAGEMENT VIEW.");
+            return true;
+        }
+        if (cmd.equals("0")) {
+            return false;
+        }
+        buyerHandler.handleCommand(cmd);
+        return true;
     }
 
     private void handleSellerCommand(String cmd) {

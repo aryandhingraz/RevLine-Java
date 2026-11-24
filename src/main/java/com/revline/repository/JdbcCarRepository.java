@@ -23,9 +23,16 @@ public class JdbcCarRepository implements CarRepository {
     private static final String SELECT_COLUMNS =
             "car_id, brand, model, price, top_speed, fuel_type, horsepower, acceleration, status";
 
-    private final Connection connection;
+    private Connection connection;
 
     public JdbcCarRepository(Connection connection) {
+        if (connection == null) {
+            throw new IllegalArgumentException("Connection cannot be null.");
+        }
+        this.connection = connection;
+    }
+
+    public synchronized void updateConnection(Connection connection) {
         if (connection == null) {
             throw new IllegalArgumentException("Connection cannot be null.");
         }
@@ -169,7 +176,7 @@ public class JdbcCarRepository implements CarRepository {
         }
     }
 
-    /** EX-6: Finds cars in an inclusive price range using bound parameters. */
+    /** Finds cars in an inclusive price range using bound parameters. */
     @Override
     public synchronized List<Car> findByPriceRange(double minPrice, double maxPrice) throws RepositoryException {
         String sql = "SELECT " + SELECT_COLUMNS + " FROM cars WHERE price BETWEEN ? AND ? ORDER BY car_id";

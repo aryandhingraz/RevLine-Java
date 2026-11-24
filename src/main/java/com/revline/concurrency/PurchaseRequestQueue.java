@@ -9,7 +9,7 @@ import java.util.Queue;
  * Bounded buffer queue for purchase requests demonstrating guarded blocks,
  * monitor wait/notifyAll, and producer-consumer synchronization (L15, L16).
  *
- * EX-8: FIFO consumer dequeue using a guarded wait block.
+ * FIFO consumer dequeue using a guarded wait block.
  */
 public class PurchaseRequestQueue {
 

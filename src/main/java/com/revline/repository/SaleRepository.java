@@ -1,12 +1,14 @@
 package com.revline.repository;
 
+import com.revline.model.Car;
 import com.revline.model.Sale;
 import com.revline.util.exception.RepositoryException;
 
 import java.util.List;
 
 /**
- * Specific repository contract for Sale entities.
+ * Specific repository contract for Sale entities (L1, L24).
+ * Declares storage operations for recording transactions and querying sales history.
  */
 public interface SaleRepository extends Repository<Sale, Integer> {
 
@@ -26,4 +28,15 @@ public interface SaleRepository extends Repository<Sale, Integer> {
      * @throws RepositoryException on failure
      */
     int nextId() throws RepositoryException;
+
+    /**
+     * Persists a sale transaction safely to underlying storage (L19, L26).
+     * In JDBC mode, executes an atomic relational transaction (updates car status to SOLD and saves sale).
+     * In CSV flat-file mode, saves the sale record to the sales ledger file.
+     *
+     * @param sale completed sale transaction entity
+     * @param soldCar car entity associated with the transaction
+     * @throws RepositoryException on storage or relational transaction failure
+     */
+    void recordSale(Sale sale, Car soldCar) throws RepositoryException;
 }

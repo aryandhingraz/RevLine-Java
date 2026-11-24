@@ -76,46 +76,46 @@ final class BuyerMenuHandler {
         List<Car> results = new ArrayList<>();
 
         switch (choice) {
-            case 1: {
-                int id = reader.readInt("  Enter exact Car ID to find: ", 1, 999999);
-                try {
-                    Car found = searchService.findById(id);
-                    results.add(found);
-                    recentlyViewed.recordView(found);
-                } catch (CarNotFoundException e) {
-                    System.out.println("\n  [!] " + e.getMessage());
-                }
-                break;
-            }
-            case 2: {
-                String query = reader.readLine("  Enter search text (e.g. 'Ferrari', 'Hybrid', '911'): ");
-                try {
-                    results = searchService.search(query);
-                    for (Car c : results) recentlyViewed.recordView(c);
-                } catch (UnsupportedOperationException e) {
-                    System.out.println("\n  [!] EX-3 is pending student implementation: " + e.getMessage());
-                    return;
-                }
-                break;
-            }
-            case 3: {
-                double min = reader.readDouble("  Enter Minimum Budget ($): ", 0.0, 50000000.0);
-                double max = reader.readDouble("  Enter Maximum Budget ($): ", min, 50000000.0);
-                results = new FilterBuilder().minPrice(min).maxPrice(max).filter(all);
-                break;
-            }
-            case 4: {
-                int minSpeed = reader.readInt("  Enter Minimum Top Speed (km/h): ", 0, 600);
-                int minHp = reader.readInt("  Enter Minimum Horsepower (HP): ", 0, 3000);
-                results = new FilterBuilder().minSpeed(minSpeed).minHorsepower(minHp).filter(all);
-                break;
-            }
-            case 5: {
-                results = new FilterBuilder().availableOnly().filter(all);
-                break;
-            }
+            case 1: searchById(results); break;
+            case 2: searchByText(results); break;
+            case 3: filterByBudget(all, results); break;
+            case 4: filterByPerformance(all, results); break;
+            case 5: results.addAll(new FilterBuilder().availableOnly().filter(all)); break;
+            default: break;
         }
         ConsoleTable.render("SEARCH RESULTS (" + results.size() + " MATCHES)", results);
+    }
+
+    private void searchById(List<Car> results) {
+        int id = reader.readInt("  Enter exact Car ID to find: ", 1, 999999);
+        try {
+            Car found = searchService.findById(id);
+            results.add(found);
+            recentlyViewed.recordView(found);
+        } catch (CarNotFoundException e) {
+            System.out.println("\n  [!] " + e.getMessage());
+        }
+    }
+
+    private void searchByText(List<Car> results) {
+        String query = reader.readLine("  Enter search text (e.g. 'Ferrari', 'Hybrid', '911'): ");
+        List<Car> matches = searchService.search(query);
+        results.addAll(matches);
+        for (Car c : matches) {
+            recentlyViewed.recordView(c);
+        }
+    }
+
+    private void filterByBudget(List<Car> all, List<Car> results) {
+        double min = reader.readDouble("  Enter Minimum Budget ($): ", 0.0, 50000000.0);
+        double max = reader.readDouble("  Enter Maximum Budget ($): ", min, 50000000.0);
+        results.addAll(new FilterBuilder().minPrice(min).maxPrice(max).filter(all));
+    }
+
+    private void filterByPerformance(List<Car> all, List<Car> results) {
+        int minSpeed = reader.readInt("  Enter Minimum Top Speed (km/h): ", 0, 600);
+        int minHp = reader.readInt("  Enter Minimum Horsepower (HP): ", 0, 3000);
+        results.addAll(new FilterBuilder().minSpeed(minSpeed).minHorsepower(minHp).filter(all));
     }
 
     private void handleSortShowroom() {
@@ -133,7 +133,7 @@ final class BuyerMenuHandler {
             case 4: comp = CarComparators.BY_HP_DESC; title = "SHOWROOM SORTED: HORSEPOWER (MOST POWERFUL FIRST)"; break;
             case 5: comp = CarComparators.BY_ACCEL_ASC; title = "SHOWROOM SORTED: ACCELERATION (0-100 QUICKEST FIRST)"; break;
             case 6: comp = CarComparators.BY_BRAND_MODEL; title = "SHOWROOM SORTED: BRAND & MODEL (ALPHABETICAL)"; break;
-            case 7: comp = CarComparators.byValueForMoney(); title = "SHOWROOM SORTED: VALUE FOR MONEY [EX-2]"; break;
+            case 7: comp = CarComparators.byValueForMoney(); title = "SHOWROOM SORTED: VALUE FOR MONEY (HP PER $100K)"; break;
             default: return;
         }
 
@@ -152,6 +152,10 @@ final class BuyerMenuHandler {
                 int id = reader.readInt("  Enter ID for Car #" + i + ": ", 1, 999999);
                 try {
                     Car c = inventoryService.findById(id);
+                    if (selected.contains(c)) {
+                        System.out.println("  [!] Car #" + id + " has already been selected for comparison. Please choose a different car.");
+                        continue;
+                    }
                     selected.add(c);
                     recentlyViewed.recordView(c);
                     break;
@@ -199,25 +203,35 @@ final class BuyerMenuHandler {
             }
 
             System.out.printf("  Selected Vehicle: %s %s | Price: $%,.2f\n", car.getBrand(), car.getModel(), car.getPrice());
-            String buyer = reader.readLine("  Enter Buyer Full Name: ");
-            String seller = reader.readLine("  Enter Sales Representative Name (or RevLine): ");
-            if (seller.trim().isEmpty()) {
-                seller = "RevLine Showroom";
-            }
-
-            boolean confirm = reader.confirm("  Confirm purchase for $" + String.format("%,.2f", car.getPrice()) + "?");
-            if (!confirm) {
-                System.out.println("  Purchase cancelled by user.");
+            String[] parties = promptSaleParties();
+            if (!confirmPurchase(car)) {
                 return;
             }
 
-            Sale sale = salesService.sellCar(carId, buyer, seller);
+            Sale sale = salesService.sellCar(carId, parties[0], parties[1]);
             System.out.println();
             System.out.print(salesService.generateReceipt(sale, car));
-
         } catch (RevLineException e) {
             System.out.println("\n  [!] Purchase failed: " + e.getMessage());
         }
+    }
+
+    private String[] promptSaleParties() {
+        String buyer = reader.readLine("  Enter Buyer Full Name: ");
+        String seller = reader.readLine("  Enter Sales Representative Name (or RevLine): ");
+        if (seller.trim().isEmpty()) {
+            seller = "RevLine Showroom";
+        }
+        return new String[]{buyer, seller};
+    }
+
+    private boolean confirmPurchase(Car car) {
+        boolean confirm = reader.confirm("  Confirm purchase for $" + String.format("%,.2f", car.getPrice()) + "?");
+        if (!confirm) {
+            System.out.println("  Purchase cancelled by user.");
+            return false;
+        }
+        return true;
     }
 
     private void handleJoinWaitlist() {
@@ -225,8 +239,17 @@ final class BuyerMenuHandler {
         int carId = reader.readInt("  Enter Car ID: ", 1, 999999);
         String buyer = reader.readLine("  Enter Your Full Name: ");
 
-        int pos = salesService.getWaitlistService().join(carId, buyer);
-        System.out.printf("\n  [✓] %s added to waitlist for Car #%d! Current position in queue: #%d\n", buyer, carId, pos);
+        try {
+            Car car = inventoryService.findById(carId);
+            if (car.getStatus() == Status.AVAILABLE) {
+                System.out.printf("  [!] Car #%d is currently AVAILABLE. Waitlist is reserved for unavailable vehicles.\n", carId);
+                return;
+            }
+            int pos = salesService.getWaitlistService().join(carId, buyer);
+            System.out.printf("\n  [✓] %s added to waitlist for Car #%d! Current position in queue: #%d\n", buyer, carId, pos);
+        } catch (CarNotFoundException e) {
+            System.out.println("  [!] Car #" + carId + " not found in showroom inventory.");
+        }
     }
 
     private void handleRecentlyViewed() {

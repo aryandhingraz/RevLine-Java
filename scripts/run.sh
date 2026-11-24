@@ -11,5 +11,5 @@ if [ ! -f out/main/com/revline/app/RevLineApp.class ]; then
     if [ $? -ne 0 ]; then exit 1; fi
 fi
 
-java -cp "out/main:lib/*" com.revline.app.RevLineApp
+java -cp "out/main:lib/*" com.revline.app.RevLineApp "$@"
 exit $?

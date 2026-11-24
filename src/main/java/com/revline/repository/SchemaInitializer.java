@@ -2,6 +2,7 @@ package com.revline.repository;
 
 import com.revline.model.Car;
 import com.revline.model.Sale;
+import com.revline.util.AppPaths;
 import com.revline.util.exception.RepositoryException;
 
 import java.io.BufferedReader;
@@ -89,9 +90,9 @@ public final class SchemaInitializer {
     private static void seedIfEmpty(Connection connection) throws RepositoryException {
         // Seed cars if table is currently empty
         if (getRowCount(connection, "cars") == 0) {
-            File seedCarsFile = new File("data/seed/cars.csv");
+            File seedCarsFile = new File(AppPaths.SEED_CARS);
             if (!seedCarsFile.exists()) {
-                seedCarsFile = new File("data/cars.csv");
+                seedCarsFile = new File(AppPaths.RUNTIME_CARS);
             }
             if (seedCarsFile.exists()) {
                 seedCarsFromCsv(connection, seedCarsFile);
@@ -100,9 +101,9 @@ public final class SchemaInitializer {
 
         // Seed sales if table is currently empty
         if (getRowCount(connection, "sales") == 0) {
-            File seedSalesFile = new File("data/seed/sales.csv");
+            File seedSalesFile = new File(AppPaths.SEED_SALES);
             if (!seedSalesFile.exists()) {
-                seedSalesFile = new File("data/sales.csv");
+                seedSalesFile = new File(AppPaths.RUNTIME_SALES);
             }
             if (seedSalesFile.exists()) {
                 seedSalesFromCsv(connection, seedSalesFile);
@@ -136,19 +137,11 @@ public final class SchemaInitializer {
                 while ((line = reader.readLine()) != null) {
                     lineNum++;
                     String trimmed = line.trim();
-                    if (trimmed.isEmpty() || trimmed.startsWith("#") || (lineNum == 1 && (trimmed.toLowerCase().startsWith("id") || trimmed.toLowerCase().startsWith("carid")))) {
+                    if (isHeaderOrComment(trimmed, lineNum)) {
                         continue;
                     }
                     Car car = Car.fromCsv(trimmed, lineNum);
-                    ps.setInt(1, car.getId());
-                    ps.setString(2, car.getBrand());
-                    ps.setString(3, car.getModel());
-                    ps.setDouble(4, car.getPrice());
-                    ps.setInt(5, car.getTopSpeed());
-                    ps.setString(6, car.getFuelType().name());
-                    ps.setInt(7, car.getHorsepower());
-                    ps.setDouble(8, car.getAcceleration());
-                    ps.setString(9, car.getStatus().name());
+                    bindCarStatement(ps, car);
                     ps.executeUpdate();
                 }
                 connection.commit();
@@ -162,6 +155,38 @@ public final class SchemaInitializer {
             if (e instanceof RepositoryException) throw (RepositoryException) e;
             throw new RepositoryException("I/O error during SQLite cars seeding: " + e.getMessage(), e);
         }
+    }
+
+    private static boolean isHeaderOrComment(String line, int lineNum) {
+        if (line.isEmpty() || line.startsWith("#")) {
+            return true;
+        }
+        if (lineNum == 1) {
+            String lower = line.toLowerCase();
+            return lower.startsWith("id") || lower.startsWith("carid") || lower.startsWith("saleid");
+        }
+        return false;
+    }
+
+    private static void bindCarStatement(PreparedStatement ps, Car car) throws SQLException {
+        ps.setInt(1, car.getId());
+        ps.setString(2, car.getBrand());
+        ps.setString(3, car.getModel());
+        ps.setDouble(4, car.getPrice());
+        ps.setInt(5, car.getTopSpeed());
+        ps.setString(6, car.getFuelType().name());
+        ps.setInt(7, car.getHorsepower());
+        ps.setDouble(8, car.getAcceleration());
+        ps.setString(9, car.getStatus().name());
+    }
+
+    private static void bindSaleStatement(PreparedStatement ps, Sale sale) throws SQLException {
+        ps.setInt(1, sale.getSaleId());
+        ps.setInt(2, sale.getCarId());
+        ps.setString(3, sale.getBuyerName());
+        ps.setString(4, sale.getSellerName());
+        ps.setString(5, sale.getSaleDate().toString());
+        ps.setDouble(6, sale.getPrice());
     }
 
     private static void seedSalesFromCsv(Connection connection, File file) throws RepositoryException {
@@ -180,16 +205,11 @@ public final class SchemaInitializer {
                 while ((line = reader.readLine()) != null) {
                     lineNum++;
                     String trimmed = line.trim();
-                    if (trimmed.isEmpty() || trimmed.startsWith("#") || (lineNum == 1 && trimmed.toLowerCase().startsWith("saleid"))) {
+                    if (isHeaderOrComment(trimmed, lineNum)) {
                         continue;
                     }
                     Sale sale = Sale.fromCsv(trimmed, lineNum);
-                    ps.setInt(1, sale.getSaleId());
-                    ps.setInt(2, sale.getCarId());
-                    ps.setString(3, sale.getBuyerName());
-                    ps.setString(4, sale.getSellerName());
-                    ps.setString(5, sale.getSaleDate().toString());
-                    ps.setDouble(6, sale.getPrice());
+                    bindSaleStatement(ps, sale);
                     ps.executeUpdate();
                 }
                 connection.commit();

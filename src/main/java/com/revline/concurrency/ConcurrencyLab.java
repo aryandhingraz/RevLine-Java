@@ -66,6 +66,24 @@ public final class ConcurrencyLab {
      * Demo 1: Proves race conditions by running 4 threads incrementing counters 10,000 times each.
      */
     public static void runDemo1RaceCondition() {
+        printDemo1Header();
+
+        final int threadCount = 4;
+        final int incrementsPerThread = 10_000;
+        final int expectedTotal = threadCount * incrementsPerThread;
+
+        for (int round = 1; round <= 3; round++) {
+            int unsafeActual = runUnsafeTrial(threadCount, incrementsPerThread);
+            int safeActual = runSafeTrial(threadCount, incrementsPerThread);
+            int lostUpdates = expectedTotal - unsafeActual;
+
+            System.out.printf("  Round %d: Unsafe = %,6d (Lost %,5d updates) | Safe = %,6d [MATCH: %b]\n",
+                    round, unsafeActual, lostUpdates, safeActual, safeActual == expectedTotal);
+        }
+        System.out.println("==========================================================================");
+    }
+
+    private static void printDemo1Header() {
         System.out.println();
         System.out.println("==========================================================================");
         System.out.println(" DEMO 1: RACE CONDITION PROOF (UnsafeCounter vs SafeCounter - L13, L14)   ");
@@ -74,52 +92,49 @@ public final class ConcurrencyLab {
         System.out.println(" Explanation: 'count++' is not atomic; it performs read-modify-write.");
         System.out.println(" Without synchronization, concurrent updates overwrite one another.");
         System.out.println("--------------------------------------------------------------------------");
+    }
 
-        final int threadCount = 4;
-        final int incrementsPerThread = 10_000;
-        final int expectedTotal = threadCount * incrementsPerThread;
-
-        for (int round = 1; round <= 3; round++) {
-            // Test UnsafeCounter
-            final UnsafeCounter unsafe = new UnsafeCounter();
-            List<Thread> unsafeThreads = new ArrayList<>();
-            for (int i = 0; i < threadCount; i++) {
-                Thread t = new Thread(() -> {
-                    for (int j = 0; j < incrementsPerThread; j++) {
-                        unsafe.increment();
-                    }
-                }, "UnsafeWorker-" + i);
-                unsafeThreads.add(t);
-                t.start();
-            }
-            for (Thread t : unsafeThreads) {
-                try { t.join(); } catch (InterruptedException ignored) {}
-            }
-
-            // Test SafeCounter
-            final SafeCounter safe = new SafeCounter();
-            List<Thread> safeThreads = new ArrayList<>();
-            for (int i = 0; i < threadCount; i++) {
-                Thread t = new Thread(() -> {
-                    for (int j = 0; j < incrementsPerThread; j++) {
-                        safe.increment();
-                    }
-                }, "SafeWorker-" + i);
-                safeThreads.add(t);
-                t.start();
-            }
-            for (Thread t : safeThreads) {
-                try { t.join(); } catch (InterruptedException ignored) {}
-            }
-
-            int unsafeActual = unsafe.getCount();
-            int safeActual = safe.getCount();
-            int lostUpdates = expectedTotal - unsafeActual;
-
-            System.out.printf("  Round %d: Unsafe = %,6d (Lost %,5d updates) | Safe = %,6d [MATCH: %b]\n",
-                    round, unsafeActual, lostUpdates, safeActual, safeActual == expectedTotal);
+    private static int runUnsafeTrial(int threadCount, int incrementsPerThread) {
+        final UnsafeCounter unsafe = new UnsafeCounter();
+        List<Thread> threads = new ArrayList<>();
+        for (int i = 0; i < threadCount; i++) {
+            Thread t = new Thread(() -> {
+                for (int j = 0; j < incrementsPerThread; j++) {
+                    unsafe.increment();
+                }
+            }, "UnsafeWorker-" + i);
+            threads.add(t);
+            t.start();
         }
-        System.out.println("==========================================================================");
+        joinAllThreads(threads);
+        return unsafe.getCount();
+    }
+
+    private static int runSafeTrial(int threadCount, int incrementsPerThread) {
+        final SafeCounter safe = new SafeCounter();
+        List<Thread> threads = new ArrayList<>();
+        for (int i = 0; i < threadCount; i++) {
+            Thread t = new Thread(() -> {
+                for (int j = 0; j < incrementsPerThread; j++) {
+                    safe.increment();
+                }
+            }, "SafeWorker-" + i);
+            threads.add(t);
+            t.start();
+        }
+        joinAllThreads(threads);
+        return safe.getCount();
+    }
+
+    private static void joinAllThreads(List<Thread> threads) {
+        for (Thread t : threads) {
+            try {
+                t.join();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt(); // Restore interrupted status (L9)
+                break;
+            }
+        }
     }
 
     // =========================================================================
@@ -179,6 +194,41 @@ public final class ConcurrencyLab {
      * Demo 5: Thread interruption, graceful shutdown, and memory visibility (L10, L14).
      */
     public static void runDemo5InterruptionAndVisibility(InventoryService inventoryService) {
-        ConcurrencyLabDemos.runDemo5InterruptionAndVisibility(inventoryService);
+        System.out.println();
+        System.out.println("==========================================================================");
+        System.out.println(" DEMO 5: THREAD INTERRUPTION & MEMORY VISIBILITY (L10, L14)              ");
+        System.out.println("==========================================================================");
+
+        AutoSaveThread autoSave = new AutoSaveThread(inventoryService, 10_000L, null);
+        System.out.println("  1. Launching AutoSaveThread (Daemon = " + autoSave.isDaemon()
+                + ", Priority = " + autoSave.getPriority() + ")...");
+        autoSave.start();
+
+        try {
+            Thread.sleep(50);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+        System.out.println("  2. AutoSaveThread state while sleeping: " + autoSave.getState());
+
+        System.out.println("  3. Signaling interrupt() and shutdown()...");
+        long startTime = System.currentTimeMillis();
+        autoSave.shutdown();
+
+        try {
+            autoSave.join(2000);
+            long elapsed = System.currentTimeMillis() - startTime;
+            System.out.printf("  4. AutoSaveThread joined cleanly in %d ms (State: %s, isAlive: %b)\n",
+                    elapsed, autoSave.getState(), autoSave.isAlive());
+        } catch (InterruptedException e) {
+            System.out.println("  [!] Join was interrupted.");
+        }
+
+        System.out.println("--------------------------------------------------------------------------");
+        System.out.println("  Memory Visibility Awareness (L14 volatile keyword):");
+        System.out.println("  - Without 'volatile', a thread's cached read of a boolean flag may never see");
+        System.out.println("    writes made by another thread due to CPU register caching.");
+        System.out.println("  - Marking 'volatile boolean running' guarantees immediate visibility across threads.");
+        System.out.println("==========================================================================");
     }
 }

@@ -15,12 +15,18 @@ final class ByteStreamBackup {
     private ByteStreamBackup() {}
 
     static void backupFile(File sourceFile, File backupFile, AppLogger logger) throws IOException {
-        if (sourceFile == null || !sourceFile.exists()) {
+        if (sourceFile == null || !sourceFile.isFile()) {
             throw new IllegalArgumentException("Source file does not exist: " + sourceFile);
         }
-        File parent = backupFile.getParentFile();
-        if (parent != null && !parent.exists()) {
-            parent.mkdirs();
+        if (backupFile == null) {
+            throw new IllegalArgumentException("Backup destination cannot be null.");
+        }
+        if (sourceFile.getCanonicalFile().equals(backupFile.getCanonicalFile())) {
+            throw new IllegalArgumentException("Source and backup destination must be different files.");
+        }
+        File parent = backupFile.getAbsoluteFile().getParentFile();
+        if (parent != null && !parent.exists() && !parent.mkdirs()) {
+            throw new IOException("Could not create backup directory: " + parent.getPath());
         }
 
         try (FileInputStream fis = new FileInputStream(sourceFile);
@@ -39,10 +45,57 @@ final class ByteStreamBackup {
     }
 
     static void restoreFile(File backupFile, File targetFile, AppLogger logger) throws IOException {
-        if (backupFile == null || !backupFile.exists()) {
+        if (backupFile == null || !backupFile.isFile()) {
             throw new IllegalArgumentException("Backup file does not exist: " + backupFile);
         }
-        backupFile(backupFile, targetFile, null);
+        if (targetFile == null) {
+            throw new IllegalArgumentException("Restore target cannot be null.");
+        }
+        if (backupFile.getCanonicalFile().equals(targetFile.getCanonicalFile())) {
+            throw new IllegalArgumentException("Backup and restore target must be different files.");
+        }
+
+        File parent = targetFile.getAbsoluteFile().getParentFile();
+        if (parent != null && !parent.exists() && !parent.mkdirs()) {
+            throw new IOException("Could not create restore directory: " + parent.getPath());
+        }
+
+        File temporary = new File(targetFile.getAbsolutePath() + ".restore.tmp");
+        File previous = new File(targetFile.getAbsolutePath() + ".restore.bak");
+        if (temporary.exists() && !temporary.delete()) {
+            throw new IOException("Could not remove an older temporary restore file.");
+        }
+        if (previous.exists() && !previous.delete()) {
+            throw new IOException("Could not remove an older restore backup.");
+        }
+
+        // Prepare the replacement before touching the active target.
+        backupFile(backupFile, temporary, null);
+
+        boolean hadOriginal = targetFile.exists();
+        if (hadOriginal && !targetFile.renameTo(previous)) {
+            System.gc();
+            try {
+                Thread.sleep(50);
+            } catch (InterruptedException ignored) {
+                Thread.currentThread().interrupt();
+            }
+            if (!targetFile.renameTo(previous)) {
+                temporary.delete();
+                throw new IOException("Could not preserve the current target before restore: " + targetFile.getName());
+            }
+        }
+
+        if (!temporary.renameTo(targetFile)) {
+            if (hadOriginal && !previous.renameTo(targetFile)) {
+                throw new IOException("Restore failed and the previous target could not be recovered.");
+            }
+            throw new IOException("Could not place the restored file at " + targetFile.getPath());
+        }
+
+        if (previous.exists()) {
+            previous.delete();
+        }
         if (logger != null) {
             logger.log("DATA_TOOLS", "RESTORE", "Restored file from: " + backupFile.getName());
         }

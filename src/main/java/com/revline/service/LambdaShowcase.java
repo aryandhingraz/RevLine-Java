@@ -65,7 +65,7 @@ public final class LambdaShowcase {
     }
 
     // =========================================================================
-    // FOUR CATEGORIES OF METHOD REFERENCES (L22, MASTER_PROMPT §11.6)
+    // Four Categories of Method References (L22)
     // =========================================================================
 
     /**

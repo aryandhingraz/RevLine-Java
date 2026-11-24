@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -17,7 +18,7 @@ import java.util.List;
  */
 public class AppLogger {
 
-    private static final String DEFAULT_LOG_PATH = "logs/audit.log";
+    private static final String DEFAULT_LOG_PATH = AppPaths.AUDIT_LOG;
     private static final int MAX_BUFFER_LINES = 20;
     private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
 
@@ -55,10 +56,10 @@ public class AppLogger {
         String line = String.format("%s | %-8s | %-16s | %s", timestamp, actor, action, details);
 
         // 1. Append to disk log
-        try (PrintWriter pw = new PrintWriter(new FileWriter(logFile, true))) {
+        try (PrintWriter pw = new PrintWriter(new FileWriter(logFile, StandardCharsets.UTF_8, true))) {
             pw.println(line);
         } catch (IOException e) {
-            System.err.println("[WARN] Failed to write to audit log: " + e.getMessage());
+            // Logging failure to disk must not crash application or corrupt console output
         }
 
         // 2. Maintain recent memory buffer
@@ -77,6 +78,22 @@ public class AppLogger {
     public void log(AuditEntry entry) {
         if (entry != null) {
             log(entry.getActor(), entry.getAction(), entry.getDetails());
+        }
+    }
+
+    /**
+     * Records an exception event and writes its stack trace to disk log.
+     */
+    public synchronized void logError(String actor, String action, Throwable error) {
+        if (error == null) {
+            log(actor, action, "Unknown error");
+            return;
+        }
+        log(actor, action, error.getClass().getSimpleName() + ": " + error.getMessage());
+        try (PrintWriter pw = new PrintWriter(new FileWriter(logFile, StandardCharsets.UTF_8, true))) {
+            error.printStackTrace(pw);
+        } catch (IOException e) {
+            // Disk logging failure must not throw further exceptions
         }
     }
 
