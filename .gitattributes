@@ -1,5 +1,7 @@
 * text=auto
+* linguist-detectable=false
 *.java text eol=lf
+*.java linguist-detectable=true
 *.md   text eol=lf
 *.csv  text eol=lf
 *.sql  text eol=lf
